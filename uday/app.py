@@ -514,6 +514,29 @@ def main():
         # Only visualize the client-to-trade graph, remove other charts
         visualize_client_behavior(filtered_data)
 
+def explain_trade(trade_id, fpml_data):
+    """
+    Simulated LLM explanation of a trade using hardcoded logic.
+    """
+    trades = fpml_data.get('trades', [])
+    for trade in trades:
+        if str(trade.get('tradeId')) == trade_id:
+            trade_type = trade.get('tradeType', 'unknown')
+            notional = trade.get('notional', 'N/A')
+            currency = trade.get('currency', 'N/A')
+            party = trade.get('party', 'N/A')
+            direction = trade.get('buySell', 'N/A')
+            date = trade.get('tradeDate', 'N/A')
+            return (
+                f"**Trade ID:** {trade_id}\n\n"
+                f"This is a **{direction}** trade of type **{trade_type}** executed on **{date}**. "
+                f"The notional amount is **{notional} {currency}**. "
+                f"The counterparty involved is **{party}**.\n\n"
+                f"This trade may be used for risk management, hedging, or speculative purposes depending on your portfolio."
+            )
+    return f"🚫 No trade found with ID `{trade_id}` in the current FPML data."
+
+
 def main():
     st.markdown('<div class="header">FPML Data Analyzer & Chat</div>', unsafe_allow_html=True)
 
@@ -532,7 +555,37 @@ def main():
 
             # File upload
             fpml_file = st.file_uploader("Upload FPML File", type=["xml", "fpml"])
-            xsd_file = st.file_uploader("Upload XSD Schema (Optional)", type=["xsd", "xml"])
+
+            # Process button
+            if st.button("Process FPML"):
+                st.session_state.process_fpml = True
+                st.session_state.fpml_data = get_fpml_data(fpml_file)
+
+            # Adding a thick line separator
+            st.markdown("<hr style='border: 2px solid #333; margin: 20px 0;'>", unsafe_allow_html=True)
+
+            # 📦 FINAL VERSION — All inside a single styled container with working Streamlit components
+            with st.container():
+                st.markdown(
+                    """
+                    <div>
+                        <h4 style="margin-top: 0;">🔍 Explain My Trade</h4>
+                    </div>
+                    """,
+                    unsafe_allow_html=True
+                )
+
+                # Streamlit components inside the visual box
+                trade_id_input = st.text_input("Enter Trade ID", key="trade_id_box")
+                if st.button("Explain My Trade"):
+                    if trade_id_input and 'fpml_data' in st.session_state:
+                        explanation = explain_trade(trade_id_input, st.session_state.fpml_data)
+                        st.session_state.trade_explanation = explanation
+                    else:
+                        st.warning("Please enter a valid Trade ID and upload FPML data first.")
+
+            # Adding a thick line separator
+            st.markdown("<hr style='border: 2px solid #333; margin: 20px 0;'>", unsafe_allow_html=True)
 
             # Add date range selector
             st.subheader("Filter by Date Range")
@@ -567,6 +620,9 @@ def main():
                 start_date = date_range[0]
                 end_date = date_range[0]
 
+            # # Adding a thick line separator
+            # st.markdown("<hr style='border: 2px solid #333; margin: 20px 0;'>", unsafe_allow_html=True)
+
             # Chart selection - Added "Custom Charts" option
             # Chart selection - Added new jazzy chart options
             chart_type = st.selectbox(
@@ -576,9 +632,13 @@ def main():
                          "Animated Bubble", "Radar Chart", "Network Graph"]
             )
 
-            if st.button("Process FPML"):
-                st.session_state.process_fpml = True
-                st.session_state.fpml_data = get_fpml_data(fpml_file, xsd_file)
+            # # Process button
+            # if st.button("Process FPML"):
+            #     st.session_state.process_fpml = True
+            #     st.session_state.fpml_data = get_fpml_data(fpml_file)
+            # if st.button("Process FPML"):
+            #     st.session_state.process_fpml = True
+            #     st.session_state.fpml_data = get_fpml_data(fpml_file, xsd_file)
 
         try:
             # Initialize state
