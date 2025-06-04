@@ -204,6 +204,4 @@
 
   - - - - - The LLM should process the FPML data and return a JSON response with this structure, containing all the necessary fields for the selected chart type. The application will then use this structured data to generate the appropriate visualization.
 
-
-
-### ds
+### next heading here
