@@ -514,11 +514,26 @@ def main():
         # Only visualize the client-to-trade graph, remove other charts
         visualize_client_behavior(filtered_data)
 
-def explain_trade(trade_id, fpml_data):
+def explain_trade(trade_id):
     """
     Simulated LLM explanation of a trade using hardcoded logic.
     """
-    trades = fpml_data.get('trades', [])
+    if True:
+        print(f"faking response for graphviz")
+        # Read JSON data from file
+        try:
+            with open('graphviz_res1.json', 'r') as file:
+                return json.load(file)  # Parse JSON data
+        except json.JSONDecodeError as e:
+            print(f"Error decoding JSON: {e}")
+            return None
+        except FileNotFoundError:
+            print(f"File not found: graphviz_res1.json")
+            return None
+
+    response = get_fpml_data(None)
+    trades = response.get('trades', [])
+    print(f"explain trade trades: {trades}")
     for trade in trades:
         if str(trade.get('tradeId')) == trade_id:
             trade_type = trade.get('tradeType', 'unknown')
@@ -536,6 +551,69 @@ def explain_trade(trade_id, fpml_data):
             )
     return f"🚫 No trade found with ID `{trade_id}` in the current FPML data."
 
+
+def create_trade_graph(trade_id, fpml_data):
+    # Extracting the trade data
+    trade_date = fpml_data.get("trade_date", "Unknown")
+    value_date = fpml_data.get("value_date", "Unknown")
+    exchange_rate = fpml_data.get("exchange_rate", {})
+    exchange_currency = exchange_rate.get("currency_pair", "Unknown")
+    rate = exchange_rate.get("rate", "Unknown")
+    parties = fpml_data.get("parties", [])
+
+    # Check if the required data is available
+    if not parties or not exchange_rate:
+        print("Error: Missing required trade data.")
+        return None
+
+    # Create the Graphviz graph
+    graph = graphviz.Digraph(format='png', engine='dot')
+    # graph = graphviz.Digraph()
+    graph.attr(rankdir="LR", size="8")
+
+    # Add trade and value dates as metadata
+    graph.attr(label=f"Trade ID: {trade_id}\nTrade Date: {trade_date}\nValue Date: {value_date}", labelloc="t", fontsize="20")
+
+    # Add parties (Payers and Receivers) as nodes with unique identifiers (name + role)
+    for party in parties:
+        name = party.get("name", "Unknown")
+        role = party.get("role", "Unknown")
+        currency = party.get("currency", "Unknown")
+        amount = party.get("amount", 0)
+
+        # Create a unique node ID by appending the role to the name
+        node_id = f"{name} ({role})"
+        graph.node(node_id, f"{name}\nRole: {role}\nPays/Receives: {amount} {currency}")
+
+    # Add edges between payers and receivers
+    payer_party = [p for p in parties if p.get("role") == "Payer"]
+    receiver_party = [p for p in parties if p.get("role") == "Receiver"]
+
+    for payer, receiver in zip(payer_party, receiver_party):
+        payer_name = payer.get("name", "Unknown")
+        receiver_name = receiver.get("name", "Unknown")
+
+        # Use the unique node identifiers (name + role)
+        payer_node = f"{payer_name} (Payer)"
+        receiver_node = f"{receiver_name} (Receiver)"
+
+        graph.edge(payer_node, receiver_node, label=f"Rate: {rate}\nCurrency Pair: {exchange_currency}")
+
+    # Additional formatting
+    graph.attr(dpi='70')
+
+    # Return the graph source for rendering
+    return graph.source
+
+def render_graph_as_image(dot_source):
+    # Create the Graphviz graph from the DOT source
+    graph = graphviz.Source(dot_source)
+
+    # Render and save the graph as an image
+    graph.render('graph_output', format='png', cleanup=True)
+
+    # Display the image in Streamlit
+    st.image('graph_output.png')
 
 def main():
     st.markdown('<div class="header">FPML Data Analyzer & Chat</div>', unsafe_allow_html=True)
@@ -572,12 +650,12 @@ def main():
                 trade_id_input = st.text_input("Enter Trade ID", key="trade_id_box")
 
                 if st.button("Explain My Trade"):
-                    if trade_id_input and 'fpml_data' in st.session_state:
-                        explanation = explain_trade(trade_id_input, st.session_state.fpml_data)
+                    if trade_id_input:
+                        explanation = explain_trade(trade_id_input)
                         st.session_state.trade_explanation = explanation
-                        st.session_state.graphviz_data = create_trade_graph(trade_id_input, st.session_state.fpml_data)
+                        print(f"explanation received: {st.session_state.trade_explanation }")
+                        st.session_state.graphviz_data = create_trade_graph(trade_id_input, st.session_state.trade_explanation)
                         st.success("Trade explanation and Graphviz generated!")
-
                     else:
                         st.warning("Please enter a valid Trade ID and upload FPML data first.")
 
@@ -639,12 +717,16 @@ def main():
 
             # If a trade explanation was generated, show the Graphviz diagram
             if 'graphviz_data' in st.session_state:
+                filtered_data = st.session_state.graphviz_data
+                print(f"Graphviz Visualization for Trade: {st.session_state.graphviz_data}")
                 st.subheader("Graphviz Visualization for Trade")
                 st.graphviz_chart(st.session_state.graphviz_data)
+                # render_graph_as_image(st.session_state.graphviz_data)
 
         except Exception as e:
             st.error(f"Error processing FPML data: {str(e)}")
             st.write("Data structure:", filtered_data)
+            st.error(f"graphviz error: {st.session_state.graphviz_data}")
 
         # Show data summary
         if "summary" in filtered_data:
@@ -655,12 +737,19 @@ def main():
         with st.expander("View Raw Trade Data"):
             if "trades" in filtered_data:
                 st.dataframe(pd.DataFrame(filtered_data["trades"]))
+            elif 'graphviz_data' in st.session_state:
+                st.text(st.session_state.graphviz_data)
             else:
                 st.write("No trade data available")
 
         # Add this to debug your sample data
         with st.expander("Debug Sample Data Structure"):
-            st.json(filtered_data)
+            if "trades" in filtered_data:
+                st.dataframe(pd.DataFrame(filtered_data["trades"]))
+            elif 'graphviz_data' in st.session_state:
+                st.text(st.session_state.graphviz_data)
+            else:
+                st.write("No trade data available")
 
     # Tab 2: FPML Q&A
     with tabs[1]:

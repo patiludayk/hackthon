@@ -1,0 +1,14 @@
+{
+  "parties": [
+    { "name": "Barclays Capital", "role": "Payer", "currency": "USD", "amount": 2420345 },
+    { "name": "JPMorgan Chase", "role": "Receiver", "currency": "USD", "amount": 2420345 },
+    { "name": "Barclays Capital", "role": "Receiver", "currency": "CNH", "amount": 17270371.75 },
+    { "name": "JPMorgan Chase", "role": "Payer", "currency": "CNH", "amount": 17270371.75 }
+  ],
+  "exchange_rate": {
+    "currency_pair": "USD/CNH",
+    "rate": 7.1355
+  },
+  "trade_date": "2025-05-03",
+  "value_date": "2025-05-05"
+}
