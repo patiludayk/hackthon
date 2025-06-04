@@ -7,6 +7,7 @@ import numpy as np
 from datetime import datetime
 import json
 import requests
+import graphviz
 
 # Configure the page
 st.set_page_config(
@@ -232,6 +233,7 @@ def get_sample_fpml_data():
         # Base trade data
         trade = {
             "tradeId": f"T{i+1000}",
+            "client": f"Client_{i % 5 + 1}",  # Simulate 5 clients
             "tradeDate": date.strftime("%Y-%m-%d"),
             "type": trade_type,
             "pair": pair,
@@ -268,6 +270,41 @@ def get_sample_fpml_data():
             "tradesByPair": {p: len([tr for tr in trades if tr["pair"] == p]) for p in currency_pairs}
         }
     }
+
+def create_client_trade_graph(data):
+    """Generate a Graphviz diagram showing clients and their trade types"""
+    if "trades" not in data or not data["trades"]:
+        st.warning("No trade data available for Graphviz.")
+        return
+
+    df = pd.DataFrame(data["trades"])
+
+    if "client" not in df.columns or "type" not in df.columns:
+        st.warning("Missing 'client' or 'type' data.")
+        return
+
+    dot = graphviz.Digraph()
+    dot.attr(rankdir="LR", size="8")
+
+    # Add unique clients and trade types
+    clients = df["client"].unique()
+    trade_types = df["type"].unique()
+
+    for client in clients:
+        dot.node(client, shape="box", style="filled", color="lightblue")
+
+    for ttype in trade_types:
+        dot.node(ttype, shape="ellipse", style="filled", color="lightgray")
+
+    # Add edges from clients to trade types
+    edge_data = df.groupby(["client", "type"]).size().reset_index(name="count")
+
+    for _, row in edge_data.iterrows():
+        dot.edge(row["client"], row["type"], label=str(row["count"]))
+
+    # Render
+    st.graphviz_chart(dot)
+
 
 def create_fpml_chart(data, chart_type):
     """Create a chart based on the selected type and FPML data"""
@@ -430,11 +467,60 @@ def visualize_trade_types(data):
     with st.expander("View Trade Type Data"):
         st.dataframe(df)
 
+def visualize_client_behavior(data):
+    """Visualize client-to-trade relationships using Graphviz"""
+    if not data or "trades" not in data or not data["trades"]:
+        st.warning("No client data available.")
+        return
+
+    df = pd.DataFrame(data["trades"])
+
+    if "client" not in df.columns:
+        st.warning("Client data not available in trade records.")
+        return
+
+    st.subheader("Client-to-Trade Graph (Graphviz)")
+
+    # Call the function to generate the client-to-trade graph (assuming this is implemented elsewhere)
+    create_client_trade_graph(data)
+
+
+def main():
+    st.markdown('<div class="header">FPML Data Analyzer & Chat</div>', unsafe_allow_html=True)
+
+    # Create tabs with only Client Behavior tab
+    tabs = st.tabs(["📈 Client Behavior"])
+
+    # Tab 3: Client Behavior
+    with tabs[0]:
+        st.header("Client Behavior Analytics")
+
+        # Use filtered data if available
+        if 'fpml_data' in st.session_state:
+            trades_df = pd.DataFrame(st.session_state.fpml_data['trades'])
+            if 'tradeDate' in trades_df.columns:
+                trades_df['tradeDate'] = pd.to_datetime(trades_df['tradeDate'])
+                filtered_trades = trades_df[(trades_df['tradeDate'].dt.date >= start_date) &
+                                            (trades_df['tradeDate'].dt.date <= end_date)]
+                filtered_data = {
+                    'trades': filtered_trades.to_dict('records'),
+                    'summary': st.session_state.fpml_data.get('summary', {})
+                }
+            else:
+                filtered_data = st.session_state.fpml_data
+        else:
+            filtered_data = get_sample_fpml_data()
+
+        # Only visualize the client-to-trade graph, remove other charts
+        visualize_client_behavior(filtered_data)
+
 def main():
     st.markdown('<div class="header">FPML Data Analyzer & Chat</div>', unsafe_allow_html=True)
 
     # Create tabs
-    tabs = st.tabs(["📊 FPML Visualization", "💬 FPML Q&A"])
+    # tabs = st.tabs(["📊 FPML Visualization", "💬 FPML Q&A"])
+    tabs = st.tabs(["📊 FPML Visualization", "💬 FPML Q&A", "📈 Client Behavior"])
+
 
     # Tab 1: FPML Visualization
     with tabs[0]:
@@ -596,6 +682,32 @@ def main():
             if st.sidebar.button(question, key=f"q_{question[:20]}"):
                 st.session_state.user_question = question
                 st.experimental_rerun()
+
+    # Tab 3: Client Behavior
+    with tabs[2]:
+        st.header("Client Behavior Analytics")
+
+        # Use filtered data if available
+        if 'fpml_data' in st.session_state:
+            trades_df = pd.DataFrame(st.session_state.fpml_data['trades'])
+            if 'tradeDate' in trades_df.columns:
+                trades_df['tradeDate'] = pd.to_datetime(trades_df['tradeDate'])
+                filtered_trades = trades_df[(trades_df['tradeDate'].dt.date >= start_date) &
+                                            (trades_df['tradeDate'].dt.date <= end_date)]
+                filtered_data = {
+                    'trades': filtered_trades.to_dict('records'),
+                    'summary': st.session_state.fpml_data.get('summary', {})
+                }
+            else:
+                filtered_data = st.session_state.fpml_data
+        else:
+            filtered_data = get_sample_fpml_data()
+
+        visualize_client_behavior(filtered_data)
+        st.subheader("Client-to-Trade Graph (Graphviz)")
+        create_client_trade_graph(filtered_data)
+
+
 
 if __name__ == "__main__":
     main()
