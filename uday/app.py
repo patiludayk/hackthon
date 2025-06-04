@@ -541,9 +541,7 @@ def main():
     st.markdown('<div class="header">FPML Data Analyzer & Chat</div>', unsafe_allow_html=True)
 
     # Create tabs
-    # tabs = st.tabs(["📊 FPML Visualization", "💬 FPML Q&A"])
     tabs = st.tabs(["📊 FPML Visualization", "💬 FPML Q&A", "📈 Client Behavior"])
-
 
     # Tab 1: FPML Visualization
     with tabs[0]:
@@ -553,44 +551,42 @@ def main():
         with st.sidebar:
             st.header("FPML Controls")
 
-            # File upload
+            # 📦 Upload FPML File Section
+            st.subheader("Upload FPML File")
             fpml_file = st.file_uploader("Upload FPML File", type=["xml", "fpml"])
 
-            # Process button
-            if st.button("Process FPML"):
+            # Process FPML file automatically when uploaded
+            if fpml_file:
                 st.session_state.process_fpml = True
-                st.session_state.fpml_data = get_fpml_data(fpml_file)
+                st.session_state.fpml_data = get_fpml_data(fpml_file)  # Process and extract data immediately
+                st.success("FPML file successfully uploaded! Now select the chart type.")
 
             # Adding a thick line separator
             st.markdown("<hr style='border: 2px solid #333; margin: 20px 0;'>", unsafe_allow_html=True)
 
-            # 📦 FINAL VERSION — All inside a single styled container with working Streamlit components
+            # 📦 Explain My Trade Section
             with st.container():
-                st.markdown(
-                    """
-                    <div>
-                        <h4 style="margin-top: 0;">🔍 Explain My Trade</h4>
-                    </div>
-                    """,
-                    unsafe_allow_html=True
-                )
+                st.markdown("<h4 style='margin-top: 0;'>🔍 Explain My Trade</h4>", unsafe_allow_html=True)
 
                 # Streamlit components inside the visual box
                 trade_id_input = st.text_input("Enter Trade ID", key="trade_id_box")
+
                 if st.button("Explain My Trade"):
                     if trade_id_input and 'fpml_data' in st.session_state:
                         explanation = explain_trade(trade_id_input, st.session_state.fpml_data)
                         st.session_state.trade_explanation = explanation
+                        st.session_state.graphviz_data = create_trade_graph(trade_id_input, st.session_state.fpml_data)
+                        st.success("Trade explanation and Graphviz generated!")
+
                     else:
                         st.warning("Please enter a valid Trade ID and upload FPML data first.")
 
             # Adding a thick line separator
             st.markdown("<hr style='border: 2px solid #333; margin: 20px 0;'>", unsafe_allow_html=True)
 
-            # Add date range selector
+            # 📦 Filter Date Range Section
             st.subheader("Filter by Date Range")
-
-            # Get min and max dates from data
+            # Extract date range from FPML data if available
             if 'fpml_data' in st.session_state and 'trades' in st.session_state.fpml_data:
                 trades_df = pd.DataFrame(st.session_state.fpml_data['trades'])
                 if 'tradeDate' in trades_df.columns:
@@ -604,7 +600,6 @@ def main():
                 min_date = datetime(2023, 1, 1).date()
                 max_date = datetime(2023, 12, 31).date()
 
-            # Use a single date_input with defaults that select the full range
             date_range = st.date_input(
                 "Select Date Range",
                 value=(min_date, max_date),
@@ -612,19 +607,9 @@ def main():
                 max_value=max_date
             )
 
-            # Extract start and end dates from the tuple
-            if len(date_range) == 2:
-                start_date, end_date = date_range
-            else:
-                # Handle case where user selects only one date
-                start_date = date_range[0]
-                end_date = date_range[0]
+            start_date, end_date = date_range if len(date_range) == 2 else (date_range[0], date_range[0])
 
-            # # Adding a thick line separator
-            # st.markdown("<hr style='border: 2px solid #333; margin: 20px 0;'>", unsafe_allow_html=True)
-
-            # Chart selection - Added "Custom Charts" option
-            # Chart selection - Added new jazzy chart options
+            # 📦 Chart Selection
             chart_type = st.selectbox(
                 "Select Chart Type",
                 options=["Trade Types", "Currency Pairs", "Trade Timeline", "Exchange Rates",
@@ -632,50 +617,31 @@ def main():
                          "Animated Bubble", "Radar Chart", "Network Graph"]
             )
 
-            # # Process button
-            # if st.button("Process FPML"):
-            #     st.session_state.process_fpml = True
-            #     st.session_state.fpml_data = get_fpml_data(fpml_file)
-            # if st.button("Process FPML"):
-            #     st.session_state.process_fpml = True
-            #     st.session_state.fpml_data = get_fpml_data(fpml_file, xsd_file)
-
+        # Main Visualization Display (Based on File Upload or Trade ID Input)
         try:
-            # Initialize state
-            if 'process_fpml' not in st.session_state:
-                st.session_state.process_fpml = False
-                st.session_state.fpml_data = get_sample_fpml_data()
+            filtered_data = {}  # Default empty dictionary, to avoid UnboundLocalError
 
-            # Add date filtering here
-            if 'trades' in st.session_state.fpml_data:
-                trades_df = pd.DataFrame(st.session_state.fpml_data['trades'])
-                if 'tradeDate' in trades_df.columns:
-                    trades_df['tradeDate'] = pd.to_datetime(trades_df['tradeDate'])
-                    filtered_trades = trades_df[(trades_df['tradeDate'].dt.date >= start_date) &
-                                                (trades_df['tradeDate'].dt.date <= end_date)]
-                    filtered_data = {
-                        'trades': filtered_trades.to_dict('records'),
-                        'summary': st.session_state.fpml_data.get('summary', {})
-                    }
-                else:
-                    filtered_data = st.session_state.fpml_data
-            else:
+            # Check if FPML data is available and process it
+            if 'fpml_data' in st.session_state and st.session_state.fpml_data:
                 filtered_data = st.session_state.fpml_data
+                if 'process_fpml' in st.session_state and st.session_state.process_fpml:
+                    # If FPML data is uploaded and processed, show charts
+                    if chart_type in ["3D Scatter", "Sunburst", "Animated Bubble", "Radar Chart", "Network Graph"]:
+                        # Handle jazzy charts
+                        st.subheader(f"{chart_type} Visualization")
+                        fig = create_fpml_chart(filtered_data, chart_type)
+                        st.plotly_chart(fig, use_container_width=True)
+                    elif chart_type == "Trade Types":
+                        visualize_trade_types(filtered_data)
+                    else:
+                        fig = create_fpml_chart(filtered_data, chart_type)
+                        st.plotly_chart(fig, use_container_width=True)
 
+            # If a trade explanation was generated, show the Graphviz diagram
+            if 'graphviz_data' in st.session_state:
+                st.subheader("Graphviz Visualization for Trade")
+                st.graphviz_chart(st.session_state.graphviz_data)
 
-
-            # Display chart based on selection
-            if chart_type in ["3D Scatter", "Sunburst", "Animated Bubble", "Radar Chart", "Network Graph"]:
-                # Handle the new jazzy chart types
-                st.subheader(f"{chart_type} Visualization")
-                fig = create_fpml_chart(filtered_data, chart_type)
-                st.plotly_chart(fig, use_container_width=True)
-            elif chart_type == "Trade Types":
-                visualize_trade_types(filtered_data)
-            else:
-                # For other standard chart types
-                fig = create_fpml_chart(filtered_data, chart_type)
-                st.plotly_chart(fig, use_container_width=True)
         except Exception as e:
             st.error(f"Error processing FPML data: {str(e)}")
             st.write("Data structure:", filtered_data)
@@ -766,8 +732,6 @@ def main():
         visualize_client_behavior(filtered_data)
         st.subheader("Client-to-Trade Graph (Graphviz)")
         create_client_trade_graph(filtered_data)
-
-
 
 if __name__ == "__main__":
     main()
