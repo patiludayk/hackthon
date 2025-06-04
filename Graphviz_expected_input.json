@@ -1,0 +1,20 @@
+{
+  "trade_type": "fxForward",
+  "trade_date": "2025-04-27",
+  "value_date": "2025-05-04",
+  "party1": {
+    "name": "Barclays Capital",
+    "pays_currency": "CNH",
+    "pays_amount": 58267695.46,
+    "receives_currency": "USD",
+    "receives_amount": 8216902
+  },
+  "party2": {
+    "name": "JPMorgan Chase",
+    "pays_currency": "USD",
+    "pays_amount": 8216902,
+    "receives_currency": "CNH",
+    "receives_amount": 58267695.46
+  },
+  "rate": 7.0912
+}
