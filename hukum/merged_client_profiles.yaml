@@ -1,0 +1,96 @@
+
+- party1:
+    party_id: Party1
+    party_name: Global FX Ltd
+  party2:
+    party_id: Party2
+    party_name: International Bank Corp
+  scenarios:
+    - name: Stable Market
+      date_range:
+        start: 2024-03-01
+        end: 2024-05-31
+      tenors: ["1", "3"]
+      currency_preferences: ["USD/EUR", "USD/JPY"]
+      notional1_range: [1000000, 5000000]
+      spot_rate_range: [1.1, 1.2]
+    - name: Tariff Spike
+      date_range:
+        start: 2024-04-01
+        end: 2024-05-31
+      tenors: ["6"]
+      currency_preferences: ["USD/CNH"]
+      notional1_range: [5000000, 10000000]
+      spot_rate_range: [7.1, 7.3]
+
+- party1:
+    party_id: Party3
+    party_name: Pacific Trade Co
+  party2:
+    party_id: Party4
+    party_name: EastAsia FX Desk
+  scenarios:
+    - name: Pre-Tariff Calm
+      date_range:
+        start: 2024-03-01
+        end: 2024-04-15
+      tenors: ["1", "3"]
+      currency_preferences: ["USD/INR"]
+      notional1_range: [800000, 4000000]
+      spot_rate_range: [82.5, 83.0]
+    - name: Post-Volatility
+      date_range:
+        start: 2024-04-16
+        end: 2024-05-31
+      tenors: ["3", "6"]
+      currency_preferences: ["USD/MXN"]
+      notional1_range: [2000000, 7000000]
+      spot_rate_range: [16.8, 17.2]
+
+- party1:
+    party_id: Party5
+    party_name: Continental Hedge Fund
+  party2:
+    party_id: Party6
+    party_name: MegaBank FX
+  scenarios:
+    - name: Stable Hedging
+      date_range:
+        start: 2024-03-01
+        end: 2024-05-31
+      tenors: ["1", "3"]
+      currency_preferences: ["EUR/USD", "GBP/USD"]
+      notional1_range: [1500000, 4500000]
+      spot_rate_range: [1.24, 1.28]
+
+- party1:
+    party_id: Party7
+    party_name: Tokyo Holdings
+  party2:
+    party_id: Party8
+    party_name: Nippon Investments
+  scenarios:
+    - name: Yen Watch
+      date_range:
+        start: 2024-03-01
+        end: 2024-05-31
+      tenors: ["1", "6"]
+      currency_preferences: ["USD/JPY"]
+      notional1_range: [3000000, 8000000]
+      spot_rate_range: [145, 150]
+
+- party1:
+    party_id: Party9
+    party_name: Latin American FX
+  party2:
+    party_id: Party10
+    party_name: Banco de Mercados
+  scenarios:
+    - name: Peso Hedging
+      date_range:
+        start: 2024-03-01
+        end: 2024-05-31
+      tenors: ["1", "3"]
+      currency_preferences: ["USD/MXN"]
+      notional1_range: [2000000, 6000000]
+      spot_rate_range: [16.5, 17.0]
