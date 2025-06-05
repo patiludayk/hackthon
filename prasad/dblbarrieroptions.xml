@@ -1,0 +1,118 @@
+<requestConfirmation xmlns="http://abc/FpML-5/confirmation" xmlns:xsi="http://abc/2001/XMLSchema-instance" fpmlVersion="5-11" xsi:schemaLocation="http://abc/FpML-5/confirmation ../../fpml-main-5-11.xsd http://abc/2000/09/xmldsig# ../../xmldsig-core-schema.xsd">
+<header>
+<messageId messageIdScheme="http://www.abc.com/coding-scheme/messageId">FX109876</messageId>
+<sentBy messageAddressScheme="http://www.abc.com/partyId">Barclays Bank PLC</sentBy>
+<sendTo messageAddressScheme="http://www.abc.com/partyId">ABC Ltd</sendTo>
+<creationTimestamp>2025-04-01T08:57:00Z</creationTimestamp>
+</header>
+<isCorrection>false</isCorrection>
+<correlationId correlationIdScheme="http://www.db.com/coding-scheme/correlationId">FX01234</correlationId>
+<sequenceNumber>1</sequenceNumber>
+<trade>
+<tradeHeader>
+<partyTradeIdentifier>
+<partyReference href="party1"/>
+<tradeId tradeIdScheme="http://www.abc.com">TEST_1</tradeId>
+</partyTradeIdentifier>
+<partyTradeIdentifier>
+<partyReference href="party2"/>
+<tradeId tradeIdScheme="http://www.abc.com">TEST_1</tradeId>
+</partyTradeIdentifier>
+<tradeDate>2025-04-01</tradeDate>
+</tradeHeader>
+<fxOption>
+<productType productTypeScheme="http://www.abc.com">DOUBLEBARRIER</productType>
+<buyerPartyReference href="party2"/>
+<sellerPartyReference href="party1"/>
+<europeanExercise>
+<expiryDate>2025-04-28</expiryDate>
+<expiryTime>
+<hourMinuteTime>10:00:00</hourMinuteTime>
+<businessCenter>USNY</businessCenter>
+</expiryTime>
+<valueDate>2025-04-30</valueDate>
+</europeanExercise>
+<putCurrencyAmount>
+<currency>JPY</currency>
+<amount>2500000000</amount>
+</putCurrencyAmount>
+<callCurrencyAmount>
+<currency>USD</currency>
+<amount>23798191.34</amount>
+</callCurrencyAmount>
+<strike>
+<rate>105.05</rate>
+<strikeQuoteBasis>PutCurrencyPerCallCurrency</strikeQuoteBasis>
+</strike>
+<spotRate>106</spotRate>
+<features>
+<barrier>
+<barrierType>Knockout</barrierType>
+<direction>Down</direction>
+<quotedCurrencyPair>
+<currency1>USD</currency1>
+<currency2>JPY</currency2>
+<quoteBasis>Currency2PerCurrency1</quoteBasis>
+</quotedCurrencyPair>
+<triggerRate>102</triggerRate>
+<informationSource>
+<rateSource>Reuters</rateSource>
+<rateSourcePage>JPY=</rateSourcePage>
+</informationSource>
+<observationStartDate>2025-04-01</observationStartDate>
+<observationEndDate>2025-04-25</observationEndDate>
+<observationEndTime>
+<hourMinuteTime>10:00:00</hourMinuteTime>
+<businessCenter>USNY</businessCenter>
+</observationEndTime>
+</barrier>
+<barrier>
+<barrierType>Knockout</barrierType>
+<direction>Up</direction>
+<quotedCurrencyPair>
+<currency1>USD</currency1>
+<currency2>JPY</currency2>
+<quoteBasis>Currency2PerCurrency1</quoteBasis>
+</quotedCurrencyPair>
+<triggerRate>115</triggerRate>
+<informationSource>
+<rateSource>Reuters</rateSource>
+<rateSourcePage>JPY=</rateSourcePage>
+</informationSource>
+<observationStartDate>2025-04-01</observationStartDate>
+<observationEndDate>2005-04-25</observationEndDate>
+<observationEndTime>
+<hourMinuteTime>10:00:00</hourMinuteTime>
+<businessCenter>USNY</businessCenter>
+</observationEndTime>
+</barrier>
+</features>
+<premium>
+<payerPartyReference href="party2"/>
+<receiverPartyReference href="party1"/>
+<paymentDate>
+<adjustableDate>
+<unadjustedDate>2025-04-26</unadjustedDate>
+<dateAdjustments>
+<businessDayConvention>NONE</businessDayConvention>
+</dateAdjustments>
+</adjustableDate>
+</paymentDate>
+<paymentAmount>
+<currency>USD</currency>
+<amount>200000</amount>
+</paymentAmount>
+<quote>
+<value>0.0081</value>
+<quoteBasis>PercentageOfCallCurrencyAmount</quoteBasis>
+</quote>
+</premium>
+</fxOption>
+</trade>
+<party id="party1">
+<partyId partyIdScheme="party1">Barclays Bank PLC</partyId>
+</party>
+<party id="party2">
+<partyId partyIdScheme="party2">ABC Ltd</partyId>
+</party>
+</requestConfirmation>

@@ -729,6 +729,7 @@ def create_trade_graph1(trade_id, summary, trade_data):
 
     # Add trade and value dates as metadata
     graph.attr(label=f"Trade ID: {trade_id}\nTrade Date: {trade_date}\nValue Date: {value_date}", labelloc="t", fontsize="20", fontcolor="black")
+    # graph.attr(label=f"{summary}", labelloc="t", fontsize="20", fontcolor="black")
     # Customize node styles
     graph.node_attr.update({
         'style': 'filled',
@@ -747,16 +748,20 @@ def create_trade_graph1(trade_id, summary, trade_data):
         currency = party.get("currency", "Unknown")
         amount = party.get("amount", 0)
 
+        pay_or_receive = "Pays/Receives"
         if role == "Payer":
             color = "lightblue"
+            pay_or_receive = "Pays"
         elif role == "Receiver":
             color = "lightgreen"
+            pay_or_receive = "Receives"
         else:
             color = "lightgray"
+            pay_or_receive = "Pays/Receives"
 
         # Create a unique node ID by appending the role to the name
         node_id = f"{name} ({role})"
-        graph.node(node_id, f"{name}\nRole: {role}\nPays/Receives: {amount} {currency}", fillcolor=color)
+        graph.node(node_id, f"{name}\nRole: {role}\n{pay_or_receive}: {amount} {currency}", fillcolor=color)
 
     # Add edges between payers and receivers
     payer_party = [p for p in parties if p.get("role") == "Payer"]
@@ -1052,6 +1057,7 @@ def main():
                             st.session_state.trade_explanation = json1
                             # print(f"explanation received: {st.session_state.trade_explanation }")
                             st.session_state.graphviz_data = create_trade_graph1(trade_id_input, summary, json1)
+                            st.markdown(summary)
                             st.success("Trade explanation and Graphviz generated!")
                     else:
                         st.warning("Please enter a valid Trade ID and upload FPML data first.")

@@ -1,0 +1,119 @@
+<requestConfirmation xmlns="http://abc/FpML-5/confirmation" xmlns:xsi="http://abc/2001/XMLSchema-instance" fpmlVersion="5-11" xsi:schemaLocation="http://abc/FpML-5/confirmation ../../fpml-main-5-11.xsd http://abc/2000/09/xmldsig# ../../xmldsig-core-schema.xsd">
+<header>
+<messageId messageIdScheme="party1">2342311</messageId>
+<sentBy>ABCD1</sentBy>
+<sendTo>ABC</sendTo>
+<creationTimestamp>2025-04-01T15:38:00-05:00</creationTimestamp>
+</header>
+<isCorrection>false</isCorrection>
+<correlationId correlationIdScheme="http://www.example.com/conversationId">2342342</correlationId>
+<sequenceNumber>1</sequenceNumber>
+<trade>
+<tradeHeader>
+<partyTradeIdentifier>
+<partyReference href="Party1"/>
+<tradeId tradeIdScheme="http://www.PartyA.com/coding-scheme/trade-id">TestID01</tradeId>
+</partyTradeIdentifier>
+<tradeDate id="TRADEDATE">2025-04-01</tradeDate>
+</tradeHeader>
+<bondOption>
+<buyerPartyReference href="Party1"/>
+<sellerPartyReference href="Party2"/>
+<optionType>Call</optionType>
+<premium>
+<payerPartyReference href="Party1"/>
+<receiverPartyReference href="Party2"/>
+<paymentAmount>
+<currency>JPY</currency>
+<amount>25000000</amount>
+</paymentAmount>
+<paymentDate>
+<adjustableDate>
+<unadjustedDate>2025-04-03</unadjustedDate>
+<dateAdjustments>
+<businessDayConvention>FOLLOWING</businessDayConvention>
+<businessCenters>
+<businessCenter>JPTO</businessCenter>
+</businessCenters>
+</dateAdjustments>
+</adjustableDate>
+</paymentDate>
+<premiumType>Fixed</premiumType>
+</premium>
+<europeanExercise>
+<expirationDate>
+<adjustableDate>
+<unadjustedDate>2025-04-25</unadjustedDate>
+<dateAdjustments>
+<businessDayConvention>FOLLOWING</businessDayConvention>
+<businessCenters>
+<businessCenter>JPTO</businessCenter>
+</businessCenters>
+</dateAdjustments>
+</adjustableDate>
+</expirationDate>
+<earliestExerciseTime>
+<hourMinuteTime>09:00:00</hourMinuteTime>
+<businessCenter>JPTO</businessCenter>
+</earliestExerciseTime>
+<expirationTime>
+<hourMinuteTime>14:30:00</hourMinuteTime>
+<businessCenter>JPTO</businessCenter>
+</expirationTime>
+</europeanExercise>
+<exerciseProcedure>
+<manualExercise>
+<exerciseNotice>
+<partyReference href="Party1"/>
+<businessCenter>JPTO</businessCenter>
+</exerciseNotice>
+</manualExercise>
+<followUpConfirmation>true</followUpConfirmation>
+<limitedRightToConfirm>false</limitedRightToConfirm>
+<splitTicket>false</splitTicket>
+</exerciseProcedure>
+<notionalAmount>
+<currency>JPY</currency>
+<amount>10000000000</amount>
+</notionalAmount>
+<optionEntitlement>10000000000</optionEntitlement>
+<entitlementCurrency>JPY</entitlementCurrency>
+<numberOfOptions>1</numberOfOptions>
+<settlementType>Physical</settlementType>
+<settlementDate>
+<adjustableDate>
+<unadjustedDate>2025-04-27</unadjustedDate>
+<dateAdjustments>
+<businessDayConvention>FOLLOWING</businessDayConvention>
+<businessCenters>
+<businessCenter>JPTO</businessCenter>
+</businessCenters>
+</dateAdjustments>
+</adjustableDate>
+</settlementDate>
+<strike>
+<price>
+<strikePrice>99.7</strikePrice>
+</price>
+</strike>
+<bond>
+<instrumentId instrumentIdScheme="CUSIP">ExampleCUSIP1</instrumentId>
+<currency>JPY</currency>
+<clearanceSystem>Clearstream</clearanceSystem>
+<couponRate>0.014</couponRate>
+<maturity>2026-04-25</maturity>
+<parValue>10000000000</parValue>
+<faceAmount>10000000000</faceAmount>
+</bond>
+</bondOption>
+<calculationAgent>
+<calculationAgentPartyReference href="Party1"/>
+</calculationAgent>
+</trade>
+<party id="Party1">
+<partyId partyIdScheme="http://abc/coding-scheme/dummy-party-id">Party A</partyId>
+</party>
+<party id="Party2">
+<partyId partyIdScheme="http://abc/coding-scheme/dummy-party-id">Party B</partyId>
+</party>
+</requestConfirmation>
