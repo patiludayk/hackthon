@@ -1,0 +1,50 @@
+clients:
+  - client_id: Global-FX3
+    party_name: Global FX3 Ltd
+    counterparty_id: COUNTERPARTY-103
+    counterparty_name: Continental Hedge Fund
+    base_currency: EUR
+    preferred_currency: USD
+    trade_date: '2025-04-10'
+    rate_range: [1.05, 1.12]
+    amount_range: [2500000, 9400000]
+
+  - client_id: Global-FX4
+    party_name: Global FX4 Ltd
+    counterparty_id: COUNTERPARTY-104
+    counterparty_name: First Street ltd
+    base_currency: GBP
+    preferred_currency: USD
+    trade_date: '2025-04-10'
+    rate_range: [1.20, 1.30]
+    amount_range: [2000000, 8000000]
+    
+  - client_id: BARX-FX5
+    party_name: BARX FX5 Ltd
+    counterparty_id: COUNTERPARTY-105
+    counterparty_name: Amazon ltd
+    base_currency: JPY
+    preferred_currency: USD
+    trade_date: '2025-04-10'
+    rate_range: [1.10, 1.90]
+    amount_range: [5000000, 11000000] 
+
+  - client_id: ATLAS-FX6
+    party_name: ATLAS FX6 Ltd
+    counterparty_id: COUNTERPARTY-106
+    counterparty_name: Zomato ltd
+    base_currency: INR
+    preferred_currency: GBP
+    trade_date: '2025-04-10'
+    rate_range: [1.25, 1.60]
+    amount_range: [7000000, 19000000] 
+
+  - client_id: CANDRIM-FX7
+    party_name: CANDRIM FX7 Ltd
+    counterparty_id: COUNTERPARTY-107
+    counterparty_name: ICANDO ltd
+    base_currency: CAN
+    preferred_currency: USD
+    trade_date: '2025-04-10'
+    rate_range: [0.90, 1.30]
+    amount_range: [4000000, 6000000]     
