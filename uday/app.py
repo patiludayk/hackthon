@@ -725,10 +725,20 @@ def create_trade_graph1(trade_id, summary, trade_data):
     # Create the Graphviz graph
     graph = graphviz.Digraph(format='png', engine='dot')
     # graph = graphviz.Digraph()
-    graph.attr(rankdir="LR", size="8")
+    graph.attr(rankdir="LR", size="18")
 
     # Add trade and value dates as metadata
-    graph.attr(label=f"Trade ID: {trade_id}\nTrade Date: {trade_date}\nValue Date: {value_date}", labelloc="t", fontsize="20")
+    graph.attr(label=f"Trade ID: {trade_id}\nTrade Date: {trade_date}\nValue Date: {value_date}", labelloc="t", fontsize="20", fontcolor="black")
+    # Customize node styles
+    graph.node_attr.update({
+        'style': 'filled',
+        'fillcolor': '#FFDDC1',
+        'fontname': 'Arial',
+        'fontsize': '12',
+        'shape': 'oval',
+        'width': '1.2',
+        'height': '0.75'
+    })
 
     # Add parties (Payers and Receivers) as nodes with unique identifiers (name + role)
     for party in parties:
@@ -737,9 +747,16 @@ def create_trade_graph1(trade_id, summary, trade_data):
         currency = party.get("currency", "Unknown")
         amount = party.get("amount", 0)
 
+        if role == "Payer":
+            color = "lightblue"
+        elif role == "Receiver":
+            color = "lightgreen"
+        else:
+            color = "lightgray"
+
         # Create a unique node ID by appending the role to the name
         node_id = f"{name} ({role})"
-        graph.node(node_id, f"{name}\nRole: {role}\nPays/Receives: {amount} {currency}")
+        graph.node(node_id, f"{name}\nRole: {role}\nPays/Receives: {amount} {currency}", fillcolor=color)
 
     # Add edges between payers and receivers
     payer_party = [p for p in parties if p.get("role") == "Payer"]
@@ -753,10 +770,15 @@ def create_trade_graph1(trade_id, summary, trade_data):
         payer_node = f"{payer_name} (Payer)"
         receiver_node = f"{receiver_name} (Receiver)"
 
-        graph.edge(payer_node, receiver_node, label=f"Rate: {rate}\nCurrency Pair: {exchange_currency}")
+        graph.edge(payer_node, receiver_node, label=f"Rate: {rate}\nCurrency Pair: {exchange_currency}",
+               color="blue",
+               fontcolor="white",
+               style="dashed",
+               arrowsize="1.5",
+               fontname="Vardana")
 
     # Additional formatting
-    graph.attr(dpi='70')
+    graph.attr(dpi='70', bgcolor="white")
 
     # Return the graph source for rendering
     return graph.source
