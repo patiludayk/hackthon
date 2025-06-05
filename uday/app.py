@@ -919,6 +919,9 @@ def prepare_for_fpml_upload_or_explain_trade(trade_id=None, fpml_file=None):
         # formatted_json = format_response(response)
         print(formatted_json)
         print(f"*******************LLM response**********************")
+        # fpml uplaod
+        # return get_fpml_data(fpml_file)
+        return explain_trade(trade_id)
     else:
         # calling Databricks for explain my trade
         print(f"Build Databrick client")
@@ -927,7 +930,7 @@ def prepare_for_fpml_upload_or_explain_trade(trade_id=None, fpml_file=None):
             http_path = "/sql/1.0/warehouses/b65f083626cc1906",
             access_token = "dapi76c6cd629f927bd814e8fdb6d41fd91f")
         cursor = connection.cursor()
-        output = cursor.execute("SELECT summary, response_json from hackathon.dataai_lens.silver_layer where tradeid='FXTRADE-ATLAS-FX6_trade_100'")
+        output = cursor.execute(f"SELECT summary, response_json from hackathon.dataai_lens.silver_layer where tradeid='{trade_id}'")
         # Fetch all results
         # print(f"fetchall: {cursor.fetchall()}")
         results = cursor.fetchall()
@@ -946,15 +949,6 @@ def prepare_for_fpml_upload_or_explain_trade(trade_id=None, fpml_file=None):
         cursor.close()
         connection.close()
         return summary, response_json
-
-
-    if fpml_file is None:
-        # explain my trade
-        return explain_my_trade(results)
-    else:
-        # fpml uplaod
-        # return get_fpml_data(fpml_file)
-        return explain_trade(trade_id)
 
 
 def main():
