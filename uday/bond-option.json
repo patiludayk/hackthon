@@ -1,0 +1,40 @@
+{
+  "graph": {
+    "directed": true,
+    "nodes": [
+      { "id": "Party1", "label": "Party A (Buyer)" },
+      { "id": "Party2", "label": "Party B (Seller)" },
+      { "id": "Trade234", "label": "Bond Option Trade" },
+      { "id": "Instrument1", "label": "JPY Bond (ExampleCUSIP1)" },
+      { "id": "Premium", "label": "JPY 25,000,000 Premium Payment" },
+      { "id": "Strike", "label": "Strike Price: 99.7 JPY" },
+      { "id": "NotionalAmount", "label": "JPY 10,000,000,000 Notional Value" },
+      { "id": "OptionEntitlement", "label": "Entitlement: JPY 10,000,000,000" },
+      { "id": "Settlement", "label": "Settlement Type: Physical" },
+      { "id": "SettlementDate", "label": "Settlement Date: June 22, 2006" },
+      { "id": "Expiration", "label": "Expiration Date: June 19, 2006" },
+      { "id": "ExerciseProcedure", "label": "European-style Exercise" },
+      { "id": "CouponRate", "label": "Coupon Rate: 1.4%" },
+      { "id": "Maturity", "label": "Maturity Date: March 20, 2011" },
+      { "id": "FaceAmount", "label": "Face Amount: JPY 10,000,000,000" },
+      { "id": "CalculationAgent", "label": "Calculation Agent: Party A" }
+    ],
+    "edges": [
+      { "source": "Party1", "target": "Trade234", "label": "Buyer of Option" },
+      { "source": "Party2", "target": "Trade234", "label": "Seller of Option" },
+      { "source": "Trade234", "target": "Instrument1", "label": "Underlying Asset" },
+      { "source": "Trade234", "target": "Premium", "label": "Option Cost" },
+      { "source": "Trade234", "target": "Strike", "label": "Strike Price" },
+      { "source": "Trade234", "target": "NotionalAmount", "label": "Total Notional Value" },
+      { "source": "Trade234", "target": "OptionEntitlement", "label": "Entitlement Value" },
+      { "source": "Trade234", "target": "Settlement", "label": "Settlement Type" },
+      { "source": "Trade234", "target": "SettlementDate", "label": "Settlement Date" },
+      { "source": "Trade234", "target": "Expiration", "label": "Expiration Date" },
+      { "source": "Trade234", "target": "ExerciseProcedure", "label": "Exercise Process" },
+      { "source": "Instrument1", "target": "CouponRate", "label": "Coupon Rate" },
+      { "source": "Instrument1", "target": "Maturity", "label": "Maturity Date" },
+      { "source": "Instrument1", "target": "FaceAmount", "label": "Total Face Value" },
+      { "source": "Trade234", "target": "CalculationAgent", "label": "Assigned Calculation Agent" }
+    ]
+  }
+}

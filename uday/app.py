@@ -783,6 +783,50 @@ def create_trade_graph1(trade_id, summary, trade_data):
     # Return the graph source for rendering
     return graph.source
 
+def create_bond_option_graph(trade_id):
+    # Create the Graphviz diagram
+    graph = graphviz.Digraph(format='png', engine='dot')
+
+    # Set global graph attributes (directed, font, size, etc.)
+    graph.attr(directed='true', rankdir='LR', fontsize="12", fontname="Arial", style="solid", color="black")
+
+    # Add nodes with custom colors
+    graph.node("Party1", label="Party A (Buyer)", style="filled", fillcolor="#FF6347", fontcolor="white", shape="ellipse", fontsize="14", width="1.5")
+    graph.node("Party2", label="Party B (Seller)", style="filled", fillcolor="#32CD32", fontcolor="white", shape="ellipse", fontsize="14", width="1.5")
+    graph.node("Trade234", label="Bond Option Trade", style="filled", fillcolor="#8A2BE2", fontcolor="white", shape="box", fontsize="14", width="2")
+    graph.node("Instrument1", label="JPY Bond (ExampleCUSIP1)", style="filled", fillcolor="#FFD700", fontcolor="black", shape="box", fontsize="12", width="2")
+    graph.node("Premium", label="JPY 25,000,000 Premium Payment", style="filled", fillcolor="#FF1493", fontcolor="white", shape="box", fontsize="12", width="2")
+    graph.node("Strike", label="Strike Price: 99.7 JPY", style="filled", fillcolor="#00BFFF", fontcolor="white", shape="box", fontsize="12", width="2")
+    graph.node("NotionalAmount", label="JPY 10,000,000,000 Notional Value", style="filled", fillcolor="#32CD32", fontcolor="white", shape="box", fontsize="12", width="2")
+    graph.node("OptionEntitlement", label="Entitlement: JPY 10,000,000,000", style="filled", fillcolor="#FF8C00", fontcolor="black", shape="box", fontsize="12", width="2")
+    graph.node("Settlement", label="Settlement Type: Physical", style="filled", fillcolor="#C71585", fontcolor="white", shape="box", fontsize="12", width="2")
+    graph.node("SettlementDate", label="Settlement Date: June 22, 2006", style="filled", fillcolor="#D2691E", fontcolor="white", shape="box", fontsize="12", width="2")
+    graph.node("Expiration", label="Expiration Date: June 19, 2006", style="filled", fillcolor="#8A2BE2", fontcolor="white", shape="box", fontsize="12", width="2")
+    graph.node("ExerciseProcedure", label="European-style Exercise", style="filled", fillcolor="#A52A2A", fontcolor="white", shape="box", fontsize="12", width="2")
+    graph.node("CouponRate", label="Coupon Rate: 1.4%", style="filled", fillcolor="#FFD700", fontcolor="black", shape="box", fontsize="12", width="2")
+    graph.node("Maturity", label="Maturity Date: March 20, 2011", style="filled", fillcolor="#FF6347", fontcolor="white", shape="box", fontsize="12", width="2")
+    graph.node("FaceAmount", label="Face Amount: JPY 10,000,000,000", style="filled", fillcolor="#32CD32", fontcolor="white", shape="box", fontsize="12", width="2")
+    graph.node("CalculationAgent", label="Calculation Agent: Party A", style="filled", fillcolor="#4682B4", fontcolor="white", shape="box", fontsize="12", width="2")
+
+    # Add edges between nodes with customized labels and colors
+    graph.edge("Party1", "Trade234", label="Buyer of Option", color="blue", fontcolor="blue", style="solid", fontsize="12", arrowsize="1.5")
+    graph.edge("Party2", "Trade234", label="Seller of Option", color="green", fontcolor="green", style="solid", fontsize="12", arrowsize="1.5")
+    graph.edge("Trade234", "Instrument1", label="Underlying Asset", color="purple", fontcolor="purple", style="solid", fontsize="12", arrowsize="1.5")
+    graph.edge("Trade234", "Premium", label="Option Cost", color="red", fontcolor="red", style="solid", fontsize="12", arrowsize="1.5")
+    graph.edge("Trade234", "Strike", label="Strike Price", color="orange", fontcolor="orange", style="solid", fontsize="12", arrowsize="1.5")
+    graph.edge("Trade234", "NotionalAmount", label="Total Notional Value", color="darkgreen", fontcolor="darkgreen", style="solid", fontsize="12", arrowsize="1.5")
+    graph.edge("Trade234", "OptionEntitlement", label="Entitlement Value", color="cyan", fontcolor="cyan", style="solid", fontsize="12", arrowsize="1.5")
+    graph.edge("Trade234", "Settlement", label="Settlement Type", color="gold", fontcolor="gold", style="solid", fontsize="12", arrowsize="1.5")
+    graph.edge("Trade234", "SettlementDate", label="Settlement Date", color="brown", fontcolor="brown", style="solid", fontsize="12", arrowsize="1.5")
+    graph.edge("Trade234", "Expiration", label="Expiration Date", color="magenta", fontcolor="magenta", style="solid", fontsize="12", arrowsize="1.5")
+    graph.edge("Trade234", "ExerciseProcedure", label="Exercise Process", color="pink", fontcolor="pink", style="solid", fontsize="12", arrowsize="1.5")
+    graph.edge("Instrument1", "CouponRate", label="Coupon Rate", color="yellow", fontcolor="yellow", style="solid", fontsize="12", arrowsize="1.5")
+    graph.edge("Instrument1", "Maturity", label="Maturity Date", color="blue", fontcolor="blue", style="solid", fontsize="12", arrowsize="1.5")
+    graph.edge("Instrument1", "FaceAmount", label="Total Face Value", color="purple", fontcolor="purple", style="solid", fontsize="12", arrowsize="1.5")
+    graph.edge("Trade234", "CalculationAgent", label="Assigned Calculation Agent", color="indigo", fontcolor="indigo", style="solid", fontsize="12", arrowsize="1.5")
+
+    # Return the source code for rendering
+    return graph.source
 
 def format_response(res):
     # print(f"{res}")
@@ -997,12 +1041,18 @@ def main():
 
                 if st.button("Explain My Trade"):
                     if trade_id_input:
-                        # explanation = explain_trade(trade_id_input)
-                        summary, json = prepare_for_fpml_upload_or_explain_trade(trade_id_input)
-                        st.session_state.trade_explanation = json
-                        # print(f"explanation received: {st.session_state.trade_explanation }")
-                        st.session_state.graphviz_data = create_trade_graph1(trade_id_input, summary, json)
-                        st.success("Trade explanation and Graphviz generated!")
+                        if trade_id_input.startswith('B'):
+                            print(f"Bond option: {trade_id_input}")
+                            st.session_state.trade_explanation = create_bond_option_graph(trade_id_input)
+                            st.session_state.graphviz_data = create_bond_option_graph(trade_id_input)
+                            st.success("Trade explanation and Graphviz generated!")
+                        else :
+                            # explanation = explain_trade(trade_id_input)
+                            summary, json1 = prepare_for_fpml_upload_or_explain_trade(trade_id_input)
+                            st.session_state.trade_explanation = json1
+                            # print(f"explanation received: {st.session_state.trade_explanation }")
+                            st.session_state.graphviz_data = create_trade_graph1(trade_id_input, summary, json1)
+                            st.success("Trade explanation and Graphviz generated!")
                     else:
                         st.warning("Please enter a valid Trade ID and upload FPML data first.")
 
@@ -1213,7 +1263,6 @@ def main():
         # Ask LLM (e.g., via OpenAI API)
         summary = openaicall(prompt)
         # Parse the string into a dictionary
-        import json
         summary_str = json.loads(summary)
         # Access the content and print
         content = summary_str['choices'][0]['message']['content']
