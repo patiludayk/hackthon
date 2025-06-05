@@ -8,6 +8,9 @@ from datetime import datetime
 import json
 import requests
 import graphviz
+import os
+import openai
+from openai import AzureOpenAI
 
 # Configure the page
 st.set_page_config(
@@ -68,6 +71,18 @@ def get_fpml_data(fpml_file=None, xsd_file=None):
     except Exception as e:
         st.error(f"Error communicating with backend: {str(e)}")
         return get_sample_fpml_data()  # Fallback to sample data
+
+def read_uploaded_file(file):
+    """Reads the uploaded file and returns its content as a string."""
+    try:
+        # Read the file content as a string
+        file_content = file.getvalue().decode("utf-8")  # assuming it's a text-based file (XML/FPML)
+        # print(f"uploaded FPML content: {file_content}")
+        return file_content
+    except Exception as e:
+        st.error(f"Error reading file: {str(e)}")
+        return None
+
 
 def create_3d_scatter(data):
     if "trades" not in data or not data["trades"]:
@@ -213,8 +228,6 @@ def create_network_graph(data):
     fig.update_layout(title_text="Currency Flow Network")
     return fig
 
-
-
 def get_sample_fpml_data():
     """Generate sample FPML data for demonstration"""
     # Sample FX trades data
@@ -304,7 +317,6 @@ def create_client_trade_graph(data):
 
     # Render
     st.graphviz_chart(dot)
-
 
 def create_fpml_chart(data, chart_type):
     """Create a chart based on the selected type and FPML data"""
@@ -484,7 +496,6 @@ def visualize_client_behavior(data):
     # Call the function to generate the client-to-trade graph (assuming this is implemented elsewhere)
     create_client_trade_graph(data)
 
-
 def main():
     st.markdown('<div class="header">FPML Data Analyzer & Chat</div>', unsafe_allow_html=True)
 
@@ -533,7 +544,7 @@ def explain_trade(trade_id):
 
     response = get_fpml_data(None)
     trades = response.get('trades', [])
-    print(f"explain trade trades: {trades}")
+    # print(f"explain trade trades: {trades}")
     for trade in trades:
         if str(trade.get('tradeId')) == trade_id:
             trade_type = trade.get('tradeType', 'unknown')
@@ -605,9 +616,165 @@ def create_trade_graph(trade_id, fpml_data):
     # Return the graph source for rendering
     return graph.source
 
-def prepare_for_fpml_upload_or_explain_trade(trade_id=None, fpml_file=None):
 
-    print(f"prepare_for_fpml_upload_or_explain_trade: trade_id: {trade_id}, fpml_file: {fpml_file}")
+def format_response(res):
+    # print(f"{res}")
+    print(f"------------1-------------")
+    # print(f"{res}")
+    # res = (res.replace("\\n", "").replace("\\","").replace("```","").replace("json","").replace("\"{","{").replace("}\"","}"))
+    # res = (res.replace("\\n", "").replace("\\","").replace("```","").replace("json","").replace("\"{","{").replace("}\"","}").replace("\"dotdigraph G", "").replace("\"plaintextdigraph G", ""))
+    res = (res.replace("\\n", "").replace("\\","").replace("```","").replace("json","").replace("\"{","{").replace("}\"","}").replace(";},", ";}\","))
+    # res = (res.replace("\\n", ""))
+    # print(f"----------2---------------")
+    print(res)
+    print(f"----------2.0.1---------------")
+    # Step 1: Extract message content from the response
+    # message_content = json.loads(res)['choices'][0]['message']['content']
+    message_content = res['choices'][0]['message']['content']
+    print(f"message_content: {message_content}")
+    print(f"----------2.1---------------")
+
+    return message_content
+
+
+def prepare_for_fpml_upload_or_explain_trade(trade_id=None, fpml_file=None):
+    # print(f"prepare_for_fpml_upload_or_explain_trade: trade_id: {trade_id}, fpml_file: {fpml_file}")
+    input_to_llm = trade_id
+    if fpml_file is not None:
+        input_to_llm = fpml_file
+
+    GRAPH_PROMPT = """You are an AI assistant specialized in analyzing market post trade data in FpML message.
+        Your task is to extract relevant information from a given FpML document.
+        Your output must be a structured JSON object.
+         
+        Instructions:
+        1. Carefully read the entire FpML trade document provided at the end of this prompt.
+        2. Extract the relevant information.
+        3. Present your findings in JSON format as specified below.
+         
+        Important Notes:
+        - Extract only relevant information.
+        - Consider the context of the entire FpML message when determining the json.
+        - Do not be verbose, only respond with the correct format and information.
+        - Some questions may have no relevant excerpts. Just return "N/A" or ["N/A"] depending on the expected type in this case.
+        - Do not include additional JSON keys beyond the ones listed here.
+        - Do not include the same key multiple times in the JSON.
+         
+        Expected sample JSON is as below :
+         
+        {
+          "trade_type": "fxForward",
+          "trade_date": "2025-04-27",
+          "value_date": "2025-05-04",
+          "party1": {
+            "name": "Barclays Capital",
+            "pays_currency": "CNH",
+            "pays_amount": 58267695.46,
+            "receives_currency": "USD",
+            "receives_amount": 8216902
+          },
+          "party2": {
+            "name": "JPMorgan Chase",
+            "pays_currency": "USD",
+            "pays_amount": 8216902,
+            "receives_currency": "CNH",
+            "receives_amount": 58267695.46
+          },
+          "rate": 7.0912
+        }
+         
+        FpML document to analyze: 
+        """ + input_to_llm
+
+    GRAPH_PROMPT_1 = """You are an AI assistant specialized in analyzing market post trade data in FpML message.
+        Your task is to extract relevant information from a given FpML document.
+        Your output must be a structured JSON object.
+         
+        Instructions:
+        1. Carefully read the entire FpML trade document provided at the end of this prompt.
+        2. Extract the relevant information.
+        3. Present your findings in JSON format as specified below.
+         
+        Important Notes:
+        - Extract only relevant information.
+        - Consider the context of the entire FpML message when determining the json.
+        - Do not be verbose, only respond with the correct format and information.
+        - Some questions may have no relevant excerpts. Just return "N/A" or ["N/A"] depending on the expected type in this case.
+        - Do not include additional JSON keys beyond the ones listed here.
+        - Do not include the same key multiple times in the JSON.
+         
+        Expected output is graphviz dot source code sequence diagram to render graph.
+        Sample code as below:
+        digraph G {
+
+          subgraph cluster_0 {
+            style=filled;
+            color=lightgrey;
+            node [style=filled,color=white];
+            a0 -> a1 -> a2 -> a3;
+            label = "process #1";
+          }
+        
+          subgraph cluster_1 {
+            node [style=filled];
+            b0 -> b1 -> b2 -> b3;
+            label = "process #2";
+            color=blue
+          }
+          start -> a0;
+          start -> b0;
+          a1 -> b3;
+          b2 -> a3;
+          a3 -> a0;
+          a3 -> end;
+          b3 -> end;
+        
+          start [shape=Mdiamond];
+          end [shape=Msquare];
+        }
+        
+        FpML document to analyze: 
+        """ + input_to_llm
+
+    # print(f"GRAPH_PROMPT: {GRAPH_PROMPT}")
+
+    # Set your OpenAI API key and Azure endpoint URL as environment variables
+    # Example: os.environ["OPENAI_API_KEY"] = "your-api-key"
+    # Example: os.environ["OPENAI_API_BASE"] = "https://your-azure-endpoint.openai.azure.com/"
+
+    os.environ["AZURE_OPENAI_API_KEY"] ='6fe74af0d78e4fa382eceed78433c3a0'
+    # gets the API Key from environment variable AZURE_OPENAI_API_KEY
+    client = AzureOpenAI(
+        # https://learn.microsoft.com/azure/ai-services/openai/reference#rest-api-versioning
+        api_version="2025-01-01-preview",
+        # https://learn.microsoft.com/azure/cognitive-services/openai/how-to/create-resource?pivots=web-portal#create-a-resource
+        azure_endpoint="https://bh-uk-openai-dataai-lens.openai.azure.com",
+    )
+
+    response = client.chat.completions.create(
+        model="gpt-4o",  # e.g. gpt-35-instant
+        messages=[
+            {
+                "role": "user",
+                "content": f"{GRAPH_PROMPT_1}",
+            },
+        ],
+    )
+    print(f"*******************LLM response**********************")
+    print(response)
+    print(f"---------------*--------")
+    # Print the JSON structure
+    print(response.to_json())
+    print(f"-----------------------")
+    # formatted_json = response.to_json()
+    print(f"*******************LLM response**********************")
+    # Extract the content from the message field
+    # message_content = response['choices'][0]['message']['content']
+    formatted_json = format_response(response.to_json())
+    # formatted_json = format_response(response)
+    print(formatted_json)
+    print(f"*******************LLM response**********************")
+
 
     if fpml_file is None:
         return explain_trade(trade_id)
@@ -633,16 +800,17 @@ def main():
             # 📦 Upload FPML File Section
             st.subheader("Upload FPML File")
             fpml_file = st.file_uploader("Upload FPML File", type=["xml", "fpml"])
-            print(f"fpml_file1111111111: {fpml_file}")
+            # Read and display the content of the uploaded file as a string
+            file_content = read_uploaded_file(fpml_file)
 
             # Process FPML file automatically when uploaded
             if fpml_file:
                 st.session_state.process_fpml = True
                 # st.session_state.fpml_data = get_fpml_data(fpml_file)  # Process and extract data immediately
-                explanation = prepare_for_fpml_upload_or_explain_trade(None, fpml_file)  # Process and extract data immediately
-                # st.session_state.graphviz_data = create_trade_graph(explanation)
+                explanation = prepare_for_fpml_upload_or_explain_trade(None, file_content)  # Process and extract data immediately
+                # explanation = prepare_for_fpml_upload_or_explain_trade(None, fpml_file)  # Process and extract data immediately
                 st.session_state.fpml_data = create_trade_graph(12345, explanation)
-                print(f"st.session_state.fpml_data: {st.session_state.fpml_data}")
+                # print(f"st.session_state.fpml_data: {st.session_state.fpml_data}")
                 st.success("FPML file successfully uploaded! Now select the chart type.")
 
             # Adding a thick line separator
@@ -721,7 +889,7 @@ def main():
                 #     else:
                 #         fig = create_fpml_chart(filtered_data, chart_type)
                 #         st.plotly_chart(fig, use_container_width=True)
-                print(f"Graphviz Visualization for Trade: {st.session_state.fpml_data}")
+                # print(f"Graphviz Visualization for Trade: {st.session_state.fpml_data}")
                 st.subheader("Graphviz Visualization for fpml upload")
                 st.graphviz_chart(st.session_state.fpml_data)
 

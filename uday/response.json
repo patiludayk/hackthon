@@ -1,0 +1,77 @@
+{
+  "id": "chatcmpl-BeusFKykeBZyZzoKSlldoK39onvPj",
+  "choices": [
+    {
+      "finish_reason": "stop",
+      "index": 0,
+      "logprobs": null,
+      "message": {
+        "content": "```dot\ndigraph G {\n  subgraph cluster_0 {\n    style=filled;\n    color=lightgrey;\n    node [style=filled,color=white];\n    A0 -> A1 -> A2;\n    label = \"F
+        X Trade Execution\";\n  }\n\n  A1 [shape=box, label=\"Party: Barclays Capital pays CNH 17,270,371.75 to JPMorgan Chase\"];\n  A2 [shape=box, label=\"Party: JPMorgan Chase pays USD 2,420,345 to Barclays Capital\"];\n  \n  start [shape=Mdiamond];\n  end [shape=Msquare];\n  start -> A0;\n  A0 -> A1;\n  A1 -> A2;\n  A2 -> end;\n}\n```",
+        "refusal": null,
+        "role": "assistant",
+        "annotations": []
+      },
+      "content_filter_results": {
+        "hate": {
+          "filtered": false,
+          "severity": "safe"
+        },
+        "self_harm": {
+          "filtered": false,
+          "severity": "safe"
+        },
+        "sexual": {
+          "filtered": false,
+          "severity": "safe"
+        },
+        "violence": {
+          "filtered": false,
+          "severity": "safe"
+        }
+      }
+    }
+  ],
+  "created": 1749091443,
+  "model": "gpt-4o-2024-08-06",
+  "object": "chat.completion",
+  "system_fingerprint": "fp_ee1d74bde0",
+  "usage": {
+    "completion_tokens": 157,
+    "prompt_tokens": 1013,
+    "total_tokens": 1170,
+    "completion_tokens_details": {
+      "accepted_prediction_tokens": 0,
+      "audio_tokens": 0,
+      "reasoning_tokens": 0,
+      "rejected_prediction_tokens": 0
+    },
+    "prompt_tokens_details": {
+      "audio_tokens": 0,
+      "cached_tokens": 0
+    }
+  },
+  "prompt_filter_results": [
+    {
+      "prompt_index": 0,
+      "content_filter_results": {
+        "hate": {
+          "filtered": false,
+          "severity": "safe"
+        },
+        "self_harm": {
+          "filtered": false,
+          "severity": "safe"
+        },
+        "sexual": {
+          "filtered": false,
+          "severity": "safe"
+        },
+        "violence": {
+          "filtered": false,
+          "severity": "safe"
+        }
+      }
+    }
+  ]
+}

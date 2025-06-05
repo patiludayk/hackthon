@@ -1,0 +1,14 @@
+Expected output is graphviz dot source code which I can directly render to generate graph
+        sample output:
+        # Create the Graphviz graph
+        graph = graphviz.Digraph(format='png', engine='dot')
+        graph.attr(rankdir="LR", size="8")
+        # Add trade and value dates as metadata
+        # Add parties (Payers and Receivers) as nodes with unique identifiers (name + role)
+            # Create a unique node ID by appending the role to the name
+        # Add edges between payers and receivers
+            # Use the unique node identifiers (name + role)
+        # Additional formatting
+        graph.attr(dpi='70')
+        # Return the graph source for rendering
+
