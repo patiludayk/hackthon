@@ -1,0 +1,45 @@
+clients:
+  - client_id: CLIENT-A
+    party_name: Barclays Capital
+    counterparty_id: COUNTERPARTY-1
+    counterparty_name: JPMorgan Chase
+    base_currency: USD
+    preferred_currency: CNH
+    rate_range: [6.85, 7.25]
+    amount_range: [1000000, 10000000]
+
+  - client_id: CLIENT-B
+    party_name: Citigroup Inc.
+    counterparty_id: COUNTERPARTY-2
+    counterparty_name: Bank of America
+    base_currency: USD
+    preferred_currency: MXN
+    rate_range: [17.5, 18.5]
+    amount_range: [500000, 7500000]
+
+  - client_id: CLIENT-C
+    party_name: HSBC Holdings
+    counterparty_id: COUNTERPARTY-3
+    counterparty_name: UBS AG
+    base_currency: EUR
+    preferred_currency: USD
+    rate_range: [1.05, 1.12]
+    amount_range: [2000000, 9000000]
+
+  - client_id: CLIENT-D
+    party_name: Deutsche Bank
+    counterparty_id: COUNTERPARTY-4
+    counterparty_name: Credit Suisse
+    base_currency: GBP
+    preferred_currency: USD
+    rate_range: [1.20, 1.30]
+    amount_range: [3000000, 8500000]
+
+  - client_id: CLIENT-E
+    party_name: Goldman Sachs
+    counterparty_id: COUNTERPARTY-5
+    counterparty_name: Morgan Stanley
+    base_currency: USD
+    preferred_currency: INR
+    rate_range: [82.5, 84.5]
+    amount_range: [2500000, 9000000]
