@@ -934,11 +934,11 @@ def main():
             # 📦 Upload FPML File Section
             st.subheader("Upload FPML File")
             fpml_file = st.file_uploader("Upload FPML File", type=["xml", "fpml"])
-            # Read and display the content of the uploaded file as a string
-            file_content = read_uploaded_file(fpml_file)
 
             # Process FPML file automatically when uploaded
             if fpml_file:
+                # Read and display the content of the uploaded file as a string
+                file_content = read_uploaded_file(fpml_file)
                 st.session_state.process_fpml = True
                 # st.session_state.fpml_data = get_fpml_data(fpml_file)  # Process and extract data immediately
                 explanation = prepare_for_fpml_upload_or_explain_trade(None, file_content)  # Process and extract data immediately
