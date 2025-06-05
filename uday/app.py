@@ -729,7 +729,6 @@ def create_trade_graph1(trade_id, summary, trade_data):
 
     # Add trade and value dates as metadata
     graph.attr(label=f"Trade ID: {trade_id}\nTrade Date: {trade_date}\nValue Date: {value_date}", labelloc="t", fontsize="20", fontcolor="black")
-    # graph.attr(label=f"{summary}", labelloc="t", fontsize="20", fontcolor="black")
     # Customize node styles
     graph.node_attr.update({
         'style': 'filled',
@@ -1057,7 +1056,6 @@ def main():
                             st.session_state.trade_explanation = json1
                             # print(f"explanation received: {st.session_state.trade_explanation }")
                             st.session_state.graphviz_data = create_trade_graph1(trade_id_input, summary, json1)
-                            st.markdown(summary)
                             st.success("Trade explanation and Graphviz generated!")
                     else:
                         st.warning("Please enter a valid Trade ID and upload FPML data first.")
