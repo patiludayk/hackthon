@@ -693,7 +693,7 @@ def prepare_for_fpml_upload_or_explain_trade(trade_id=None, fpml_file=None):
         Instructions:
         1. Carefully read the entire FpML trade document provided at the end of this prompt.
         2. Extract the relevant information.
-        3. Present your findings in JSON format as specified below.
+        3. Return graphviz dot source code should be in a valid triple-backtick code block.
          
         Important Notes:
         - Extract only relevant information.
