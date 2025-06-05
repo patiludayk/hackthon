@@ -644,8 +644,9 @@ def create_trade_graph(trade_id, fpml_data):
     # Return the graph source for rendering
     return graph.source
 
-def create_trade_graph1(trade_id, trade_data):
+def create_trade_graph1(trade_id, summary, trade_data):
     # Extracting the trade data
+    trade_data = json.loads(trade_data)
     print(f"*****************{trade_data}")
     trade_date = trade_data.get("trade_date", "Unknown")
     value_date = trade_data.get("value_date", "Unknown")
@@ -864,7 +865,7 @@ def prepare_for_fpml_upload_or_explain_trade(trade_id=None, fpml_file=None):
             http_path = "/sql/1.0/warehouses/b65f083626cc1906",
             access_token = "dapi76c6cd629f927bd814e8fdb6d41fd91f")
         cursor = connection.cursor()
-        output = cursor.execute("SELECT summary, response_json from hackathon.dataai_lens.silver_layer limit 1")
+        output = cursor.execute("SELECT summary, response_json from hackathon.dataai_lens.silver_layer where tradeid='FXTRADE-ATLAS-FX6_trade_100'")
         # Fetch all results
         # print(f"fetchall: {cursor.fetchall()}")
         results = cursor.fetchall()
@@ -873,6 +874,7 @@ def prepare_for_fpml_upload_or_explain_trade(trade_id=None, fpml_file=None):
         print(f"results: {results}")
 
         response_json= []
+        summary= []
         for row in results:
             summary = row[0].replace("```json", "").replace("```", "")  # Assuming 'summary' is the first column
             response_json = row[1].replace("```json", "").replace("```", "")  # Assuming 'response_json' is the second column
@@ -881,7 +883,7 @@ def prepare_for_fpml_upload_or_explain_trade(trade_id=None, fpml_file=None):
 
         cursor.close()
         connection.close()
-        return response_json
+        return summary, response_json
 
 
     if fpml_file is None:
@@ -936,10 +938,10 @@ def main():
                 if st.button("Explain My Trade"):
                     if trade_id_input:
                         # explanation = explain_trade(trade_id_input)
-                        explanation = prepare_for_fpml_upload_or_explain_trade(trade_id_input)
-                        st.session_state.trade_explanation = explanation
+                        summary, json = prepare_for_fpml_upload_or_explain_trade(trade_id_input)
+                        st.session_state.trade_explanation = json
                         # print(f"explanation received: {st.session_state.trade_explanation }")
-                        st.session_state.graphviz_data = create_trade_graph1(trade_id_input, st.session_state.trade_explanation)
+                        st.session_state.graphviz_data = create_trade_graph1(trade_id_input, summary, json)
                         st.success("Trade explanation and Graphviz generated!")
                     else:
                         st.warning("Please enter a valid Trade ID and upload FPML data first.")
@@ -1082,7 +1084,9 @@ def main():
 
     # Tab 3: Client Behavior
     with tabs[2]:
-        st.header("Client Behavior Analytics")
+        st.header("📊 FX Forward Trade Behavior Dashboard")
+        st.markdown("Explore client behavior changes before and after market events like tariffs.")
+
 
         # Use filtered data if available
         # if 'fpml_data' in st.session_state:
