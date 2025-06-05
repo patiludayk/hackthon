@@ -48,6 +48,28 @@ st.markdown("""
 # API configuration
 API_ENDPOINT = "http://localhost:8000/api"  # Change to your actual backend endpoint
 
+#Harish - K-mean
+def openaicall(promptContent):
+    os.environ["AZURE_OPENAI_API_KEY"] ='6fe74af0d78e4fa382eceed78433c3a0'
+    # gets the API Key from environment variable AZURE_OPENAI_API_KEY
+    client = AzureOpenAI(
+        api_version="2025-01-01-preview",
+        azure_endpoint="https://bh-uk-openai-dataai-lens.openai.azure.com",
+    )
+
+    completion = client.chat.completions.create(
+        model="gpt-4o",  # e.g. gpt-35-instant
+        messages=[
+            {
+                "role": "user",
+                "content": f"{promptContent}",
+            },
+        ],
+        max_tokens=150
+    )
+    print(completion.to_json())
+    return completion.to_json();
+
 # Helper functions
 def get_fpml_data(fpml_file=None, xsd_file=None):
     """Get processed FPML data from backend LLM model"""
@@ -1087,6 +1109,59 @@ def main():
         st.header("📊 FX Forward Trade Behavior Dashboard")
         st.markdown("Explore client behavior changes before and after market events like tariffs.")
 
+        # Load data
+        df = pd.read_csv("enhanced_party_behavior_features.csv")
+
+        # Recluster
+        from sklearn.preprocessing import StandardScaler
+        from sklearn.cluster import KMeans
+
+        features = [
+            'before_trade_count', 'after_trade_count',
+            'before_total_notional', 'after_total_notional',
+            'before_avg_notional', 'after_avg_notional',
+            'before_avg_rate', 'after_avg_rate',
+            'notional_change_pct', 'rate_sensitivity', 'trade_count_change'
+        ]
+
+        scaler = StandardScaler()
+        X_scaled = scaler.fit_transform(df[features])
+        kmeans = KMeans(n_clusters=4, random_state=42)
+        df['cluster'] = kmeans.fit_predict(X_scaled)
+
+        # Sidebar filters
+        selected_clusters = st.sidebar.multiselect("Filter by Cluster", df['cluster'].unique(), default=df['cluster'].unique())
+        selected_df = df[df['cluster'].isin(selected_clusters)]
+
+        # Bar Chart: Notional Comparison
+        st.subheader("📉 Notional Volume Before vs After Tariff (Grouped by Party)")
+        bar_fig = px.bar(
+            selected_df,
+            x='party1',
+            y=['before_total_notional', 'after_total_notional'],
+            barmode='group',
+            color_discrete_sequence=px.colors.qualitative.Dark24,
+            title="Client Notional Shift"
+        )
+        st.plotly_chart(bar_fig, use_container_width=True)
+
+        # Prepare prompt
+        data_str = df.to_markdown(index=False)
+        prompt = f"""Below is data from a bar chart:
+        
+        {data_str}
+        
+        Explain what this bar chart shows. Highlight trends and extremes.
+        """
+        # Ask LLM (e.g., via OpenAI API)
+        summary = openaicall(prompt)
+        # Parse the string into a dictionary
+        import json
+        summary_str = json.loads(summary)
+        # Access the content and print
+        content = summary_str['choices'][0]['message']['content']
+        print(content)
+        st.markdown(content)
 
         # Use filtered data if available
         # if 'fpml_data' in st.session_state:
