@@ -15,7 +15,7 @@ from databricks import sql
 
 # Configure the page
 st.set_page_config(
-    page_title="FPML Data Analyzer & Chat",
+    page_title="FPML Data Analyzer",
     page_icon="📊",
     layout="wide"
 )
@@ -44,6 +44,46 @@ st.markdown("""
     }
 </style>
 """, unsafe_allow_html=True)
+
+# Define the fancy separator as a variable
+fancy_separator = """
+    <style>
+        .fancy-separator {
+            border: none;
+            height: 3px;
+            background: linear-gradient(90deg, #00c6ff, #0072ff);
+            border-radius: 5px;
+            box-shadow: 0 4px 10px rgba(0, 114, 255, 0.3);
+            margin: 30px 0;
+            position: relative;
+            animation: glow 2s infinite ease-in-out;
+        }
+
+        .fancy-separator::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 2px;
+            background: rgba(255, 255, 255, 0.5);
+            animation: sparkle 3s infinite;
+        }
+
+        @keyframes glow {
+            0% { box-shadow: 0 4px 10px rgba(0, 114, 255, 0.3); }
+            50% { box-shadow: 0 4px 20px rgba(0, 114, 255, 0.7); }
+            100% { box-shadow: 0 4px 10px rgba(0, 114, 255, 0.3); }
+        }
+
+        @keyframes sparkle {
+            0% { width: 50%; opacity: 0.5; }
+            50% { width: 90%; opacity: 1; }
+            100% { width: 50%; opacity: 0.5; }
+        }
+    </style>
+    <hr class="fancy-separator">
+"""
 
 # API configuration
 API_ENDPOINT = "http://localhost:8000/api"  # Change to your actual backend endpoint
@@ -519,7 +559,7 @@ def visualize_client_behavior(data):
     create_client_trade_graph(data)
 
 def main():
-    st.markdown('<div class="header">FPML Data Analyzer & Chat</div>', unsafe_allow_html=True)
+    st.markdown('<div class="header">FPML Data Analyzer</div>', unsafe_allow_html=True)
 
     # Create tabs with only Client Behavior tab
     tabs = st.tabs(["📈 Client Behavior"])
@@ -918,10 +958,11 @@ def prepare_for_fpml_upload_or_explain_trade(trade_id=None, fpml_file=None):
 
 
 def main():
-    st.markdown('<div class="header">FPML Data Analyzer & Chat</div>', unsafe_allow_html=True)
+    st.markdown('<div class="header">Market Trade FPML Data Analyzer</div>', unsafe_allow_html=True)
 
     # Create tabs
-    tabs = st.tabs(["📊 FPML Visualization", "💬 FPML Q&A", "📈 Client Behavior"])
+    # tabs = st.tabs(["📊 FPML Visualization", "💬 FPML Q&A", "📈 Client Behavior"])
+    tabs = st.tabs(["📊 FPML Visualization", "📈 Client Behavior"])
 
     # Tab 1: FPML Visualization
     with tabs[0]:
@@ -930,25 +971,6 @@ def main():
         # Sidebar controls
         with st.sidebar:
             st.header("FPML Controls")
-
-            # 📦 Upload FPML File Section
-            st.subheader("Upload FPML File")
-            fpml_file = st.file_uploader("Upload FPML File", type=["xml", "fpml"])
-
-            # Process FPML file automatically when uploaded
-            if fpml_file:
-                # Read and display the content of the uploaded file as a string
-                file_content = read_uploaded_file(fpml_file)
-                st.session_state.process_fpml = True
-                # st.session_state.fpml_data = get_fpml_data(fpml_file)  # Process and extract data immediately
-                explanation = prepare_for_fpml_upload_or_explain_trade(None, file_content)  # Process and extract data immediately
-                # explanation = prepare_for_fpml_upload_or_explain_trade(None, fpml_file)  # Process and extract data immediately
-                st.session_state.fpml_data = create_trade_graph(12345, explanation)
-                # print(f"st.session_state.fpml_data: {st.session_state.fpml_data}")
-                st.success("FPML file successfully uploaded! Now select the chart type.")
-
-            # Adding a thick line separator
-            st.markdown("<hr style='border: 2px solid #333; margin: 20px 0;'>", unsafe_allow_html=True)
 
             # 📦 Explain My Trade Section
             with st.container():
@@ -969,7 +991,26 @@ def main():
                         st.warning("Please enter a valid Trade ID and upload FPML data first.")
 
             # Adding a thick line separator
-            st.markdown("<hr style='border: 2px solid #333; margin: 20px 0;'>", unsafe_allow_html=True)
+            st.markdown(fancy_separator, unsafe_allow_html=True)
+
+            # 📦 Upload FPML File Section
+            st.subheader("Upload FPML File")
+            fpml_file = st.file_uploader("Upload FPML File", type=["xml", "fpml"])
+
+            # Process FPML file automatically when uploaded
+            if fpml_file:
+                # Read and display the content of the uploaded file as a string
+                file_content = read_uploaded_file(fpml_file)
+                st.session_state.process_fpml = True
+                # st.session_state.fpml_data = get_fpml_data(fpml_file)  # Process and extract data immediately
+                explanation = prepare_for_fpml_upload_or_explain_trade(None, file_content)  # Process and extract data immediately
+                # explanation = prepare_for_fpml_upload_or_explain_trade(None, fpml_file)  # Process and extract data immediately
+                st.session_state.fpml_data = create_trade_graph(12345, explanation)
+                # print(f"st.session_state.fpml_data: {st.session_state.fpml_data}")
+                st.success("FPML file successfully uploaded! Now select the chart type.")
+
+            # Adding a thick line separator
+            st.markdown(fancy_separator, unsafe_allow_html=True)
 
             # 📦 Filter Date Range Section
             st.subheader("Filter by Date Range")
@@ -1058,54 +1099,54 @@ def main():
                 st.write("No trade data available")
 
     # Tab 2: FPML Q&A
-    with tabs[1]:
-        st.header("Chat with FPML Assistant")
-
-        # Initialize chat history
-        if 'chat_history' not in st.session_state:
-            st.session_state.chat_history = []
-
-        # Display chat history
-        for message in st.session_state.chat_history:
-            if message['role'] == 'user':
-                st.markdown(f'<div class="chat-message user-message"><b>You:</b> {message["content"]}</div>', unsafe_allow_html=True)
-            else:
-                st.markdown(f'<div class="chat-message bot-message"><b>Assistant:</b> {message["content"]}</div>', unsafe_allow_html=True)
-
-        # User input
-        user_input = st.text_input("Ask a question about the FPML data:", key="user_question")
-
-        # Process user input
-        if user_input:
-            # Add user message to chat history
-            st.session_state.chat_history.append({"role": "user", "content": user_input})
-
-            # Get response from LLM
-            response = get_chat_response(user_input, st.session_state.fpml_data)
-
-            # Add assistant response to chat history
-            st.session_state.chat_history.append({"role": "assistant", "content": response})
-
-            # Rerun to update the UI
-            st.experimental_rerun()
-
-        # Sample questions
-        st.sidebar.header("Sample FPML Questions")
-        sample_questions = [
-            "What are the most common currency pairs in the data?",
-            "What's the average exchange rate for EUR/USD trades?",
-            "How many option trades are there and what are their characteristics?",
-            "What's the total notional value of all trades?",
-            "Explain the distribution of trade types in the data"
-        ]
-
-        for question in sample_questions:
-            if st.sidebar.button(question, key=f"q_{question[:20]}"):
-                st.session_state.user_question = question
-                st.experimental_rerun()
+    # with tabs[1]:
+    #     st.header("Chat with FPML Assistant")
+    #
+    #     # Initialize chat history
+    #     if 'chat_history' not in st.session_state:
+    #         st.session_state.chat_history = []
+    #
+    #     # Display chat history
+    #     for message in st.session_state.chat_history:
+    #         if message['role'] == 'user':
+    #             st.markdown(f'<div class="chat-message user-message"><b>You:</b> {message["content"]}</div>', unsafe_allow_html=True)
+    #         else:
+    #             st.markdown(f'<div class="chat-message bot-message"><b>Assistant:</b> {message["content"]}</div>', unsafe_allow_html=True)
+    #
+    #     # User input
+    #     user_input = st.text_input("Ask a question about the FPML data:", key="user_question")
+    #
+    #     # Process user input
+    #     if user_input:
+    #         # Add user message to chat history
+    #         st.session_state.chat_history.append({"role": "user", "content": user_input})
+    #
+    #         # Get response from LLM
+    #         response = get_chat_response(user_input, st.session_state.fpml_data)
+    #
+    #         # Add assistant response to chat history
+    #         st.session_state.chat_history.append({"role": "assistant", "content": response})
+    #
+    #         # Rerun to update the UI
+    #         st.experimental_rerun()
+    #
+    #     # Sample questions
+    #     st.sidebar.header("Sample FPML Questions")
+    #     sample_questions = [
+    #         "What are the most common currency pairs in the data?",
+    #         "What's the average exchange rate for EUR/USD trades?",
+    #         "How many option trades are there and what are their characteristics?",
+    #         "What's the total notional value of all trades?",
+    #         "Explain the distribution of trade types in the data"
+    #     ]
+    #
+    #     for question in sample_questions:
+    #         if st.sidebar.button(question, key=f"q_{question[:20]}"):
+    #             st.session_state.user_question = question
+    #             st.experimental_rerun()
 
     # Tab 3: Client Behavior
-    with tabs[2]:
+    with tabs[1]:
         st.header("📊 FX Forward Trade Behavior Dashboard")
         st.markdown("Explore client behavior changes before and after market events like tariffs.")
 
