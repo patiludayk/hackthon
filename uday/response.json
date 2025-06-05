@@ -1,77 +1,9 @@
-{
-  "id": "chatcmpl-BeusFKykeBZyZzoKSlldoK39onvPj",
-  "choices": [
-    {
-      "finish_reason": "stop",
-      "index": 0,
-      "logprobs": null,
-      "message": {
-        "content": "```dot\ndigraph G {\n  subgraph cluster_0 {\n    style=filled;\n    color=lightgrey;\n    node [style=filled,color=white];\n    A0 -> A1 -> A2;\n    label = \"F
-        X Trade Execution\";\n  }\n\n  A1 [shape=box, label=\"Party: Barclays Capital pays CNH 17,270,371.75 to JPMorgan Chase\"];\n  A2 [shape=box, label=\"Party: JPMorgan Chase pays USD 2,420,345 to Barclays Capital\"];\n  \n  start [shape=Mdiamond];\n  end [shape=Msquare];\n  start -> A0;\n  A0 -> A1;\n  A1 -> A2;\n  A2 -> end;\n}\n```",
-        "refusal": null,
-        "role": "assistant",
-        "annotations": []
-      },
-      "content_filter_results": {
-        "hate": {
-          "filtered": false,
-          "severity": "safe"
-        },
-        "self_harm": {
-          "filtered": false,
-          "severity": "safe"
-        },
-        "sexual": {
-          "filtered": false,
-          "severity": "safe"
-        },
-        "violence": {
-          "filtered": false,
-          "severity": "safe"
-        }
-      }
-    }
-  ],
-  "created": 1749091443,
-  "model": "gpt-4o-2024-08-06",
-  "object": "chat.completion",
-  "system_fingerprint": "fp_ee1d74bde0",
-  "usage": {
-    "completion_tokens": 157,
-    "prompt_tokens": 1013,
-    "total_tokens": 1170,
-    "completion_tokens_details": {
-      "accepted_prediction_tokens": 0,
-      "audio_tokens": 0,
-      "reasoning_tokens": 0,
-      "rejected_prediction_tokens": 0
-    },
-    "prompt_tokens_details": {
-      "audio_tokens": 0,
-      "cached_tokens": 0
-    }
-  },
-  "prompt_filter_results": [
-    {
-      "prompt_index": 0,
-      "content_filter_results": {
-        "hate": {
-          "filtered": false,
-          "severity": "safe"
-        },
-        "self_harm": {
-          "filtered": false,
-          "severity": "safe"
-        },
-        "sexual": {
-          "filtered": false,
-          "severity": "safe"
-        },
-        "violence": {
-          "filtered": false,
-          "severity": "safe"
-        }
-      }
-    }
-  ]
-}
+[Row(summary='**Trade Summary:**\n\n- **Parties Involved:**\n  - **Party 1:** ATLAS FX6 Ltd\n  - **Party 2:** Zomato Ltd\n\n- **Trade Information:**\n  - **Trade ID:** FX
+  TRADE-ATLAS-FX6_trade_7001\n  - **Trade Date:** April 19, 2025\n  - **Sequence Number:** 7001\n  - **Correlation ID:** e1ecef6f-a733-4c66-b887-575d23ab8bb9\n\n- **Financial Instrum
+  ents:**\n  - **Type:** Foreign Exchange Single Leg (FX Single Leg)\n\n- **Currency Exchange Details:**\n  - **Exchanged Currency 1:**\n    - **Currency:** Japanese Yen (JPY)\n    -
+  **Amount:** 20,939,855 JPY\n    - **Payer:** Zomato Ltd (Party 2)\n    - **Receiver:** ATLAS FX6 Ltd (Party 1)\n  \n  - **Exchanged Currency 2:**\n    - **Currency:** United State
+  s Dollar (USD)\n    - **Amount:** 3,554,632,521.61 USD\n    - **Payer:** ATLAS FX6 Ltd (Party 1)\n    - **Receiver:** Zomato Ltd (Party 2)\n\n- **Exchange Rate Details:**\n  - **Cu
+  rrency Pair:** JPY/USD\n  - **Quote Basis:** USD per JPY\n  - **Exchange Rate:** 169.7544\n  - **Spot Rate:** 169.7544\n  - **Forward Points:** 0.0\n\n- **Key Dates:**\n  - **Value
+  Date:** May 19, 2025\n\nThis trade represents a foreign exchange transaction between ATLAS FX6 Ltd and Zomato Ltd, where JPY is exchanged for USD at a specified rate on a future v
+  alue date.', response_json='```json\n{\n  "trade_type": "fxSingleLeg",\n  "trade_date": "2025-04-19",\n  "value_date": "2025-05-19",\n  "party1": {\n    "name": "ATLAS FX6 Ltd",\n
+  "pays_currency": "USD",\n    "pays_amount": 3554632521.61,\n    "receives_currency": "JPY",\n    "receives_amount": 20939855\n  },\n  "party2": {\n    "name": "Zomato ltd",\n    "pays_currency": "JPY",\n    "pays_amount": 20939855,\n    "receives_currency": "USD",\n    "receives_amount": 3554632521.61\n  },\n  "rate": 169.7544\n}\n```')],

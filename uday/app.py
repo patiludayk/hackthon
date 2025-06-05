@@ -11,6 +11,7 @@ import graphviz
 import os
 import openai
 from openai import AzureOpenAI
+from databricks import sql
 
 # Configure the page
 st.set_page_config(
@@ -82,7 +83,6 @@ def read_uploaded_file(file):
     except Exception as e:
         st.error(f"Error reading file: {str(e)}")
         return None
-
 
 def create_3d_scatter(data):
     if "trades" not in data or not data["trades"]:
@@ -563,6 +563,34 @@ def explain_trade(trade_id):
     return f"🚫 No trade found with ID `{trade_id}` in the current FPML data."
 
 
+def explain_my_trade(result):
+    """
+    Simulated LLM explanation of a trade using hardcoded logic.
+    """
+    print(f"--------->{result}")
+    return result
+    # response = get_fpml_data(None)
+    # trades = response.get('trades', [])
+    # # print(f"explain trade trades: {trades}")
+    # for trade in trades:
+    #     if str(trade.get('tradeId')) == trade_id:
+    #         trade_type = trade.get('tradeType', 'unknown')
+    #         notional = trade.get('notional', 'N/A')
+    #         currency = trade.get('currency', 'N/A')
+    #         party = trade.get('party', 'N/A')
+    #         direction = trade.get('buySell', 'N/A')
+    #         date = trade.get('tradeDate', 'N/A')
+    #         return (
+    #             f"**Trade ID:** {trade_id}\n\n"
+    #             f"This is a **{direction}** trade of type **{trade_type}** executed on **{date}**. "
+    #             f"The notional amount is **{notional} {currency}**. "
+    #             f"The counterparty involved is **{party}**.\n\n"
+    #             f"This trade may be used for risk management, hedging, or speculative purposes depending on your portfolio."
+    #         )
+    # return f"🚫 No trade found with ID `{trade_id}` in the current FPML data."
+    return f"🚫 No trade found with ID `{trade_id}` in the current FPML data."
+
+
 def create_trade_graph(trade_id, fpml_data):
     # Extracting the trade data
     trade_date = fpml_data.get("trade_date", "Unknown")
@@ -571,6 +599,60 @@ def create_trade_graph(trade_id, fpml_data):
     exchange_currency = exchange_rate.get("currency_pair", "Unknown")
     rate = exchange_rate.get("rate", "Unknown")
     parties = fpml_data.get("parties", [])
+
+    # Check if the required data is available
+    if not parties or not exchange_rate:
+        print("Error: Missing required trade data.")
+        return None
+
+    # Create the Graphviz graph
+    graph = graphviz.Digraph(format='png', engine='dot')
+    # graph = graphviz.Digraph()
+    graph.attr(rankdir="LR", size="8")
+
+    # Add trade and value dates as metadata
+    graph.attr(label=f"Trade ID: {trade_id}\nTrade Date: {trade_date}\nValue Date: {value_date}", labelloc="t", fontsize="20")
+
+    # Add parties (Payers and Receivers) as nodes with unique identifiers (name + role)
+    for party in parties:
+        name = party.get("name", "Unknown")
+        role = party.get("role", "Unknown")
+        currency = party.get("currency", "Unknown")
+        amount = party.get("amount", 0)
+
+        # Create a unique node ID by appending the role to the name
+        node_id = f"{name} ({role})"
+        graph.node(node_id, f"{name}\nRole: {role}\nPays/Receives: {amount} {currency}")
+
+    # Add edges between payers and receivers
+    payer_party = [p for p in parties if p.get("role") == "Payer"]
+    receiver_party = [p for p in parties if p.get("role") == "Receiver"]
+
+    for payer, receiver in zip(payer_party, receiver_party):
+        payer_name = payer.get("name", "Unknown")
+        receiver_name = receiver.get("name", "Unknown")
+
+        # Use the unique node identifiers (name + role)
+        payer_node = f"{payer_name} (Payer)"
+        receiver_node = f"{receiver_name} (Receiver)"
+
+        graph.edge(payer_node, receiver_node, label=f"Rate: {rate}\nCurrency Pair: {exchange_currency}")
+
+    # Additional formatting
+    graph.attr(dpi='70')
+
+    # Return the graph source for rendering
+    return graph.source
+
+def create_trade_graph1(trade_id, trade_data):
+    # Extracting the trade data
+    print(f"*****************{trade_data}")
+    trade_date = trade_data.get("trade_date", "Unknown")
+    value_date = trade_data.get("value_date", "Unknown")
+    exchange_rate = trade_data.get("exchange_rate", {})
+    exchange_currency = exchange_rate.get("currency_pair", "Unknown")
+    rate = exchange_rate.get("rate", "Unknown")
+    parties = trade_data.get("parties", [])
 
     # Check if the required data is available
     if not parties or not exchange_rate:
@@ -640,8 +722,6 @@ def format_response(res):
 def prepare_for_fpml_upload_or_explain_trade(trade_id=None, fpml_file=None):
     # print(f"prepare_for_fpml_upload_or_explain_trade: trade_id: {trade_id}, fpml_file: {fpml_file}")
     input_to_llm = trade_id
-    if fpml_file is not None:
-        input_to_llm = fpml_file
 
     GRAPH_PROMPT = """You are an AI assistant specialized in analyzing market post trade data in FpML message.
         Your task is to extract relevant information from a given FpML document.
@@ -693,17 +773,16 @@ def prepare_for_fpml_upload_or_explain_trade(trade_id=None, fpml_file=None):
         Instructions:
         1. Carefully read the entire FpML trade document provided at the end of this prompt.
         2. Extract the relevant information.
-        3. Return graphviz dot source code should be in a valid triple-backtick code block.
+        3. Return base64-encoded graphviz(DOT) source code. Ensure the final JSON is valid and do not add additional double quotes.
          
         Important Notes:
         - Extract only relevant information.
         - Consider the context of the entire FpML message when determining the json.
         - Do not be verbose, only respond with the correct format and information.
-        - Some questions may have no relevant excerpts. Just return "N/A" or ["N/A"] depending on the expected type in this case.
         - Do not include additional JSON keys beyond the ones listed here.
         - Do not include the same key multiple times in the JSON.
          
-        Expected output is graphviz dot source code sequence diagram to render graph.
+        Expected output is graphviz(DOT) source code sequence diagram to render graph.
         Sample code as below:
         digraph G {
 
@@ -742,43 +821,74 @@ def prepare_for_fpml_upload_or_explain_trade(trade_id=None, fpml_file=None):
     # Example: os.environ["OPENAI_API_KEY"] = "your-api-key"
     # Example: os.environ["OPENAI_API_BASE"] = "https://your-azure-endpoint.openai.azure.com/"
 
-    os.environ["AZURE_OPENAI_API_KEY"] ='6fe74af0d78e4fa382eceed78433c3a0'
-    # gets the API Key from environment variable AZURE_OPENAI_API_KEY
-    client = AzureOpenAI(
-        # https://learn.microsoft.com/azure/ai-services/openai/reference#rest-api-versioning
-        api_version="2025-01-01-preview",
-        # https://learn.microsoft.com/azure/cognitive-services/openai/how-to/create-resource?pivots=web-portal#create-a-resource
-        azure_endpoint="https://bh-uk-openai-dataai-lens.openai.azure.com",
-    )
+    results = []
+    if fpml_file is not None:
+        input_to_llm = fpml_file
+        os.environ["AZURE_OPENAI_API_KEY"] ='6fe74af0d78e4fa382eceed78433c3a0'
+        # gets the API Key from environment variable AZURE_OPENAI_API_KEY
+        client = AzureOpenAI(
+            # https://learn.microsoft.com/azure/ai-services/openai/reference#rest-api-versioning
+            api_version="2025-01-01-preview",
+            # https://learn.microsoft.com/azure/cognitive-services/openai/how-to/create-resource?pivots=web-portal#create-a-resource
+            azure_endpoint="https://bh-uk-openai-dataai-lens.openai.azure.com",
+        )
 
-    response = client.chat.completions.create(
-        model="gpt-4o",  # e.g. gpt-35-instant
-        messages=[
-            {
-                "role": "user",
-                "content": f"{GRAPH_PROMPT_1}",
-            },
-        ],
-    )
-    print(f"*******************LLM response**********************")
-    print(response)
-    print(f"---------------*--------")
-    # Print the JSON structure
-    print(response.to_json())
-    print(f"-----------------------")
-    # formatted_json = response.to_json()
-    print(f"*******************LLM response**********************")
-    # Extract the content from the message field
-    # message_content = response['choices'][0]['message']['content']
-    formatted_json = format_response(response.to_json())
-    # formatted_json = format_response(response)
-    print(formatted_json)
-    print(f"*******************LLM response**********************")
+        response = client.chat.completions.create(
+            model="gpt-4o",  # e.g. gpt-35-instant
+            messages=[
+                {
+                    "role": "user",
+                    "content": f"{GRAPH_PROMPT_1}",
+                },
+            ],
+        )
+        print(f"*******************LLM response**********************")
+        print(response)
+        print(f"---------------*--------")
+        # Print the JSON structure
+        print(response.to_json())
+        print(f"-----------------------")
+        # formatted_json = response.to_json()
+        print(f"*******************LLM response**********************")
+        # Extract the content from the message field
+        # message_content = response['choices'][0]['message']['content']
+        formatted_json = format_response(response.to_json())
+        # formatted_json = format_response(response)
+        print(formatted_json)
+        print(f"*******************LLM response**********************")
+    else:
+        # calling Databricks for explain my trade
+        print(f"Build Databrick client")
+        connection = sql.connect(
+            server_hostname = "adb-7336075840475686.6.azuredatabricks.net",
+            http_path = "/sql/1.0/warehouses/b65f083626cc1906",
+            access_token = "dapi76c6cd629f927bd814e8fdb6d41fd91f")
+        cursor = connection.cursor()
+        output = cursor.execute("SELECT summary, response_json from hackathon.dataai_lens.silver_layer limit 1")
+        # Fetch all results
+        # print(f"fetchall: {cursor.fetchall()}")
+        results = cursor.fetchall()
+
+        # Printing the fetched results
+        print(f"results: {results}")
+
+        response_json= []
+        for row in results:
+            summary = row[0].replace("```json", "").replace("```", "")  # Assuming 'summary' is the first column
+            response_json = row[1].replace("```json", "").replace("```", "")  # Assuming 'response_json' is the second column
+            print(f"Summary: {summary}")
+            print(f"Response JSON: {response_json}")
+
+        cursor.close()
+        connection.close()
+        return response_json
 
 
     if fpml_file is None:
-        return explain_trade(trade_id)
+        # explain my trade
+        return explain_my_trade(results)
     else:
+        # fpml uplaod
         # return get_fpml_data(fpml_file)
         return explain_trade(trade_id)
 
@@ -828,8 +938,8 @@ def main():
                         # explanation = explain_trade(trade_id_input)
                         explanation = prepare_for_fpml_upload_or_explain_trade(trade_id_input)
                         st.session_state.trade_explanation = explanation
-                        print(f"explanation received: {st.session_state.trade_explanation }")
-                        st.session_state.graphviz_data = create_trade_graph(trade_id_input, st.session_state.trade_explanation)
+                        # print(f"explanation received: {st.session_state.trade_explanation }")
+                        st.session_state.graphviz_data = create_trade_graph1(trade_id_input, st.session_state.trade_explanation)
                         st.success("Trade explanation and Graphviz generated!")
                     else:
                         st.warning("Please enter a valid Trade ID and upload FPML data first.")
@@ -895,7 +1005,7 @@ def main():
 
             # If a trade explanation was generated, show the Graphviz diagram
             if 'graphviz_data' in st.session_state:
-                print(f"Graphviz Visualization for expalin my trade: {st.session_state.graphviz_data}")
+                print(f"Graphviz Visualization for explain my trade: {st.session_state.graphviz_data}")
                 st.subheader("Graphviz Visualization for Explain my Trade")
                 st.graphviz_chart(st.session_state.graphviz_data)
 
@@ -911,18 +1021,14 @@ def main():
 
         # Show raw data
         with st.expander("View Raw Trade Data"):
-            if "trades" in filtered_data:
-                st.dataframe(pd.DataFrame(filtered_data["trades"]))
-            elif 'graphviz_data' in st.session_state:
+            if 'graphviz_data' in st.session_state:
                 st.text(st.session_state.graphviz_data)
             else:
                 st.write("No trade data available")
 
         # Add this to debug your sample data
         with st.expander("Debug Sample Data Structure"):
-            if "trades" in filtered_data:
-                st.dataframe(pd.DataFrame(filtered_data["trades"]))
-            elif 'graphviz_data' in st.session_state:
+            if 'graphviz_data' in st.session_state:
                 st.text(st.session_state.graphviz_data)
             else:
                 st.write("No trade data available")
