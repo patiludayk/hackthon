@@ -1220,7 +1220,21 @@ def main():
         print(content)
         st.markdown(content)
 
-        # Use filtered data if available
+        # Scatter Chart: Clustered View
+        st.subheader("🟠 Client Clustering View (2D Projection Not Shown)")
+        scatter_fig = px.scatter(
+            selected_df,
+            x='notional_change_pct',
+            y='rate_sensitivity',
+            color='cluster',
+            hover_data=['party1', 'currency_pair'],
+            title="Notional Change vs Rate Sensitivity by Cluster",
+            size='after_total_notional'
+        )
+        st.plotly_chart(scatter_fig, use_container_width=True)
+
+
+# Use filtered data if available
         # if 'fpml_data' in st.session_state:
         #     trades_df = pd.DataFrame(st.session_state.fpml_data['trades'])
         #     if 'tradeDate' in trades_df.columns:
